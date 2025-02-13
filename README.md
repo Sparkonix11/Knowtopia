@@ -1,5 +1,36 @@
-# Vue 3 + Vite
+# Vue Project Setup Guide
 
-This template should help get you started developing with Vue 3 in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+## Prerequisites
+Ensure you have the following installed on your system:
+- [Node.js](https://nodejs.org/) (LTS version recommended)
+- [npm](https://www.npmjs.com/) or [yarn](https://yarnpkg.com/) (npm is included with Node.js)
 
-Learn more about IDE Support for Vue in the [Vue Docs Scaling up Guide](https://vuejs.org/guide/scaling-up/tooling.html#ide-support).
+## Installation Steps
+
+### 1. Clone the Repository
+```sh
+git clone https://github.com/Kaumudi-Kulkarni/SE-Project.git
+cd SE-Project
+```
+
+### 2. Install Dependencies
+Using npm:
+```sh
+npm install
+```
+Using yarn:
+```sh
+yarn install
+```
+
+### 3. Run the Development Server
+Using npm:
+```sh
+npm run dev
+```
+Using yarn:
+```sh
+yarn dev
+```
+This will start the local development server. The default URL is usually `http://localhost:5173/`. 
+
