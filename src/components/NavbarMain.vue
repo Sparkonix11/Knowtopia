@@ -12,14 +12,18 @@ const toggleMenu = () => {
 
 <template>
     <div class="navbar flex w-full items-center justify-between px-30 h-20 bg-(--md-sys-color-surface-container)">
-        <div></div>
-        <div class="relative flex items-center">
-            <input type="text" placeholder="Search Bar" class="w-147 h-14 rounded-[28px] border-1 p-2 px-8">
-            <md-icon-button class="absolute right-4">
-                <md-icon>search</md-icon>
-            </md-icon-button> 
+        <div class="flex-1 bg-amber-950"></div>
+
+        <div class="flex-1 flex items-center justify-center">
+            <div class="relative flex items-center justify-center">
+                <input type="text" placeholder="Search Bar" class="w-147 h-14 rounded-[28px] border-1 p-2 px-8">
+                <md-icon-button class="absolute right-4">
+                    <md-icon>search</md-icon>
+                </md-icon-button> 
+            </div>
         </div>
-        <div class="flex gap-3 items-center">
+
+        <div class="flex flex-1 gap-3 items-center justify-center">
             <md-filled-icon-button>
                 <md-icon>chat</md-icon>
             </md-filled-icon-button>
@@ -42,11 +46,14 @@ const toggleMenu = () => {
                         </div>
                     </md-menu-item>
                     <md-divider></md-divider>
-                    <md-menu-item>
-                        <div class=" text-center">Logout</div>
-                    </md-menu-item>
+                    <router-link :to="{ name: 'Login' }">
+                        <md-menu-item>
+                            <div class=" text-center">Logout</div>
+                        </md-menu-item>
+                    </router-link>
                 </md-menu>
             </span>
         </div>
+        
     </div>
 </template>

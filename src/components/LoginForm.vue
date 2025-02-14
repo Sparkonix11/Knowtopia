@@ -5,7 +5,7 @@
         <md-outlined-text-field label="Email Address" placeholder="Enter Email address" type="email"></md-outlined-text-field>
         <md-outlined-text-field label="Password" placeholder="Enter Password" type="password"></md-outlined-text-field>
 
-        <md-filled-button class=" h-14">Login</md-filled-button>
+        <router-link :to="{ name: 'EnrolledCourses' }"><md-filled-button class="w-full h-14">Login</md-filled-button></router-link>
     </div>
 </template>
 
