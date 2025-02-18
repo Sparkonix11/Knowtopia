@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from "vue-router";
 import SignupView from "@/views/SignupView.vue";
 import LoginView from "@/views/LoginView.vue";
 import EnrolledCoursesView from "@/views/EnrolledCoursesView.vue";
+import InstructorCoursesView from "@/views/InstructorCoursesView.vue";
 
 const router = createRouter({
     history: createWebHistory(),
@@ -24,6 +25,11 @@ const router = createRouter({
             path: '/courses',
             name: 'EnrolledCourses',
             component: EnrolledCoursesView
+        },
+        {
+            path: '/instructor-courses',
+            name: 'InstructorCourses',
+            component: InstructorCoursesView
         }
     ]
 });
