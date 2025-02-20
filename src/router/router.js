@@ -3,13 +3,19 @@ import SignupView from "@/views/SignupView.vue";
 import LoginView from "@/views/LoginView.vue";
 import EnrolledCoursesView from "@/views/EnrolledCoursesView.vue";
 import InstructorCoursesView from "@/views/InstructorCoursesView.vue";
+import CourseView from "@/views/CourseVIew.vue";
+import AssignmentView from "@/views/AssignmentView.vue";
+import AssignmentReportView from "@/views/AssignmentReportView.vue";
+import InstructorDashoard from "@/views/InstructorDashoard.vue";
+import ProfileView from "@/views/ProfileView.vue";
+import StudentDashboard from "@/views/StudentDashboard.vue";
 
 const router = createRouter({
     history: createWebHistory(),
     routes: [
         {
             path: "/",
-            redirect: "/signup"
+            redirect: "/login"
         },
         {
             path: '/signup',
@@ -30,6 +36,36 @@ const router = createRouter({
             path: '/instructor-courses',
             name: 'InstructorCourses',
             component: InstructorCoursesView
+        },
+        {
+            path: '/course',
+            name: 'Course',
+            component: CourseView
+        },
+        {
+            path: '/assignment',
+            name: 'Assignment',
+            component: AssignmentView
+        },
+        {
+            path: '/assignment-report',
+            name: 'AssignmentReport',
+            component: AssignmentReportView
+        },
+        {
+            path: '/instructor-dashboard',
+            name: 'InstructorDashboard',
+            component: InstructorDashoard
+        },
+        {
+            path: '/profile',
+            name: 'Profile',
+            component: ProfileView
+        },
+        {
+            path: '/student-dashboard',
+            name: 'StudentDashboard',
+            component: StudentDashboard
         }
     ]
 });

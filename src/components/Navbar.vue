@@ -1,11 +1,14 @@
 <script setup>
 import { useRoute } from 'vue-router';
 const route = useRoute();
+import logo from '@/assets/logo.png';
 </script>
 
 <template>
     <div class="navbar flex w-full items-center justify-around h-20 bg-(--md-sys-color-surface-container)">
-        <div class="flex-1"></div>
+        <div class="flex-1 flex justify-center items-center">
+            <img :src="logo" alt="" class="w-20 h-20 rounded-full ">
+        </div>
         <div class="flex-1"></div>
         <!-- <div class="relative flex items-center">
             <input type="text" placeholder="Search Bar" class="w-147 h-14 rounded-[28px] border-1 p-2 px-8">

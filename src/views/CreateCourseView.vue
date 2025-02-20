@@ -47,7 +47,7 @@ const toggleCreateLecture = () => {
 
                 <div class="flex flex-col items-start gap-2">
                 <label class="text-gray-700 font-medium">Course Thumbnail</label>
-                    <div @click="openFileSelector" class="relative w-200 h-75 bg-(--md-sys-color-primary-container) border border-(--md-sys-color-outline) rounded-[16px] flex items-center justify-center cursor-pointer hover:bg-purple-200 transition-all">
+                    <div @click="openFileSelector" class="relative w-200 h-75 bg-(--md-sys-color-primary-container) border border-(--md-sys-color-outline) rounded-[16px] flex items-center justify-center cursor-pointer hover:bg-(--md-sys-color-secondary-container) transition-all">
                         <!-- Image Preview -->
                         <img 
                             v-if="previewUrl" 
@@ -57,7 +57,7 @@ const toggleCreateLecture = () => {
                         />
 
                         <!-- Upload Icon & Text (Hidden when image is uploaded) -->
-                        <div v-if="!previewUrl" class="flex flex-col items-center text-purple-600">
+                        <div v-if="!previewUrl" class="flex flex-col items-center text-(--md-sys-color-on-primary-container)">
                             <md-icon>upload</md-icon>
                             <span>Upload</span>
                         </div>
