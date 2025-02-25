@@ -1,3 +1,4 @@
+import { loginAPI, signupAPI, logoutAPI } from "../services/operations/authAPI";
 export default {
     namespaced: true,
     state: {
@@ -14,4 +15,43 @@ export default {
             state.isAuth = false;
         }
     },
+    actions: {
+        async login({ commit }, formData) {
+            try {
+                const response = await loginAPI(formData);
+                if (response.status === 200) {
+                    commit('SET_USER', response.data.user);
+                }
+                return response;
+            } catch (error) {    
+                return error.response;
+            }
+        },
+        async signup({ commit }, formData) {
+            try {
+                const response = await signupAPI(formData);
+                if (response.status === 201) {
+                    commit('SET_USER', response.data.user);
+                }
+                return response;
+            } catch (error) {
+                return error.response;
+            }
+        },
+        async logout({ commit }) {
+            try {
+                const response = await logoutAPI();
+                if (response.status === 200) {
+                    commit('LOGOUT');
+                }
+                return response;
+            } catch (error) {
+                return error.response;
+            }
+        }
+    },
+    getters: {
+        currentUser: (state) => state.user,
+        isAuthenticated: (state) => state.isAuth
+    }
 };

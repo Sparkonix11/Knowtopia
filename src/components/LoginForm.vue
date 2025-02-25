@@ -1,7 +1,53 @@
 <script setup>
-import { ref } from "vue";
+import { ref, computed } from "vue";
+import { useStore } from "vuex";
+import { useRouter } from "vue-router";
+
+const router = useRouter();
+const store = useStore();
+
+
 const selected = ref("student");
+const errorMessage = ref("");
+const email = ref("");
+const password = ref("");
+
+const updateEmail = (event) => {
+    email.value = event.target.value;
+};
+const updatePassword = (event) => {
+    password.value = event.target.value;
+};
+
+const user = computed(() => store.getters["user/currentUser"]);
+
+const login = async () => {
+    errorMessage.value = "";
+    if (!email.value.trim() || !password.value.trim()) {
+        errorMessage.value = "Please enter both email and password.";
+        return;
+    }
+    
+    const formData = new FormData();
+    formData.append('email', email.value);
+    formData.append('password', password.value);
+
+    const response = await store.dispatch("user/login", formData);
+
+    if (response.status === 200) {
+        console.log("User details:", user.value);
+
+        if (!user.value?.is_instructor) {
+            router.push({ name: "StudentDashboard" });
+        } else {
+            router.push({ name: "InstructorDashboard" });
+        }
+    } else {
+        errorMessage.value = response.message || "Login failed. Please try again.";
+    }
+};
 </script>
+
 <template>
     <div class="flex flex-col gap-8 w-md ml-[12%]">
         <div class="flex rounded-full w-60">
@@ -27,12 +73,23 @@ const selected = ref("student");
             </button>
         </div>
 
-        <md-outlined-text-field label="Email Address" placeholder="Enter Email address" type="email"></md-outlined-text-field>
-        <md-outlined-text-field label="Password" placeholder="Enter Password" type="password"></md-outlined-text-field>
+        <md-outlined-text-field
+            @input="updateEmail"
+            label="Email Address"
+            placeholder="Enter Email address"
+            type="email"
+            :value="email"
+        ></md-outlined-text-field>
 
-        <router-link v-if="selected === 'student'" :to="{ name: 'StudentDashboard' }"><md-filled-button class="w-full h-14">Login</md-filled-button></router-link>
-        <router-link v-if="selected === 'instructor'" :to="{ name: 'InstructorDashboard' }"><md-filled-button class="w-full h-14">Login</md-filled-button></router-link>
+        <md-outlined-text-field
+            @input="updatePassword"
+            v-model="password"
+            label="Password"
+            placeholder="Enter Password"
+            type="password"
+            :value="password"
+        ></md-outlined-text-field>
 
+        <md-filled-button class="w-full h-14" @click="login">Login</md-filled-button>
     </div>
 </template>
-
