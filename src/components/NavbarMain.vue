@@ -1,28 +1,50 @@
 <script setup>
-import { ref } from 'vue';
-import avatar from '@/assets/avatar.png';
+import { ref, computed } from 'vue';
 import logo from '@/assets/logo.png';
-import router from '../router/router';
+import { useStore } from 'vuex';
+
 const menuOpen = ref(false);
 const chatOpen = ref(false);
 const notifOpen = ref(false);
 
+const store = useStore();
+const user = computed(() => store.getters["user/currentUser"]);
+
+const avatar = '../../server'+user.value.image;
 
 const toggleMenu = () => {
     menuOpen.value = !menuOpen.value;
+    if (chatOpen.value) {
+        chatOpen.value = false;
+    }
+    if (notifOpen.value) {
+        notifOpen.value = false;
+    }
 };
 const toggleChat = () => {
     chatOpen.value = !chatOpen.value;
+    if (menuOpen.value) {
+        menuOpen.value = false;
+    }
+    if (notifOpen.value) {
+        notifOpen.value = false;
+    }
 };
 const toggleNotif = () => {
     notifOpen.value = !notifOpen.value;
+    if (menuOpen.value) {
+        menuOpen.value = false;
+    }
+    if (chatOpen.value) {
+        chatOpen.value = false;
+    }
 };
 </script>
 
 <template>
     <div class="navbar flex w-full items-center justify-between px-30 h-20 bg-(--md-sys-color-surface-container)">
         <div class="flex-1 flex justify-start items-center pl-20 ">
-            <router-link :to="{ name: 'StudentDashboard' }">
+            <router-link :to="{ name: user?.is_instructor ? 'InstructorDashboard' : 'StudentDashboard' }">
                 <img :src="logo" alt="" class="w-20 h-20 rounded-full cursor-pointer">
             </router-link>
         </div>
@@ -39,7 +61,7 @@ const toggleNotif = () => {
         <div class="flex flex-1 gap-3 items-center justify-center">
 
             <span class="relative">
-                <md-filled-icon-button @click="toggleChat">
+                <md-filled-icon-button @click="toggleChat" id="user-menu">
                     <md-icon>chat</md-icon>
                 </md-filled-icon-button>
                 <md-menu id="chat-ai" :open="chatOpen" anchor="user-menu">
@@ -78,7 +100,7 @@ const toggleNotif = () => {
             </span>
 
             <span class="relative">
-                <md-filled-icon-button @click="toggleNotif">
+                <md-filled-icon-button @click="toggleNotif" id="user-menu">
                     <md-icon>notifications</md-icon>
                 </md-filled-icon-button>
                 <md-menu id="chat-ai" :open="notifOpen" anchor="user-menu">
@@ -91,7 +113,7 @@ const toggleNotif = () => {
             </span>
 
             <span class="relative">
-                <md-filled-button @click="toggleMenu" id="user-menu"><img src="../assets/avatar.png" alt="user" class="h-12 w-12 rounded-full border-2 border-(--md-sys-color-primary)"></md-filled-button>
+                <md-filled-button @click="toggleMenu" id="user-menu"><img :src="avatar" alt="user" class="h-12 w-12 rounded-full border-2 border-(--md-sys-color-primary)"></md-filled-button>
                 <md-menu id="usage-menu" :open="menuOpen" anchor="user-menu">
                     <router-link :to="{ name: 'Profile'}">
                     <md-menu-item class="w-50">

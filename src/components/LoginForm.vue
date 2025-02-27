@@ -21,13 +21,13 @@ const updatePassword = (event) => {
 
 const user = computed(() => store.getters["user/currentUser"]);
 
+
 const login = async () => {
     errorMessage.value = "";
     if (!email.value.trim() || !password.value.trim()) {
         errorMessage.value = "Please enter both email and password.";
         return;
     }
-    
     const formData = new FormData();
     formData.append('email', email.value);
     formData.append('password', password.value);
@@ -35,8 +35,6 @@ const login = async () => {
     const response = await store.dispatch("user/login", formData);
 
     if (response.status === 200) {
-        console.log("User details:", user.value);
-
         if (!user.value?.is_instructor) {
             router.push({ name: "StudentDashboard" });
         } else {
@@ -50,7 +48,7 @@ const login = async () => {
 
 <template>
     <div class="flex flex-col gap-8 w-md ml-[12%]">
-        <div class="flex rounded-full w-60">
+        <!-- <div class="flex rounded-full w-60">
             <button
             @click="selected = 'student'"
             :class="[
@@ -71,7 +69,7 @@ const login = async () => {
             <md-icon v-if="selected === 'instructor'">check</md-icon>
             Instructor
             </button>
-        </div>
+        </div> -->
 
         <md-outlined-text-field
             @input="updateEmail"
