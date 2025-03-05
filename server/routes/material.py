@@ -9,7 +9,7 @@ ALLOWED_EXTENSIONS = {"pdf", "mp4", "jpg", "png", "txt"}
 
 material_api_bp = Blueprint('material_api', __name__)
 
-@material_api_bp.route('/weeks/<int:week_id>/create_material', methods=['POST'])
+@material_api_bp.route('/<int:week_id>/create', methods=['POST'])
 @login_required
 def create_material(week_id):
     try:
@@ -34,27 +34,35 @@ def create_material(week_id):
         file = request.files["file"]
         if file.filename == "":
             return jsonify({"error": "No selected file"}), 400
+        
 
         # Validate file extension
         filename = secure_filename(file.filename)
         file_ext = filename.rsplit(".", 1)[-1].lower()
         if file_ext not in ALLOWED_EXTENSIONS:
             return jsonify({"error": "File type not allowed"}), 400
-
-        # Save file to upload folder
-        file_path = os.path.join(UPLOAD_FOLDER, filename)
-        file.save(file_path)
-
         
         new_material = Material(
             name=data['name'],
             duration=data['duration'],
             week_id=week_id,
             filename=filename
-
         )
 
         db.session.add(new_material)
+        db.session.flush()
+
+        if not os.path.exists(UPLOAD_FOLDER):
+            os.makedirs(UPLOAD_FOLDER)
+
+
+        file_ext = filename.rsplit(".", 1)[-1].lower()
+        material_filename = secure_filename(f"{new_material.id}.{file_ext}")
+        new_material_path = os.path.join(UPLOAD_FOLDER, material_filename)
+        file.save(new_material_path)
+        material_url = f"/uploads/materials/{material_filename}"
+        new_material.file_path = material_url
+
         db.session.commit()
 
         material_data = {
@@ -69,7 +77,7 @@ def create_material(week_id):
         db.session.rollback()
         return jsonify({'error': f'Failed to create material: {str(e)}'}), 500
     
-@material_api_bp.route('/delete_material/<int:material_id>', methods=['DELETE'])
+@material_api_bp.route('/<int:material_id>/delete', methods=['DELETE'])
 @login_required
 def delete_material(material_id):
     try:
@@ -84,7 +92,7 @@ def delete_material(material_id):
         if not current_user.is_instructor:
             return jsonify({'error': 'User is not an instructor'}), 403
         
-        if not week.course.creator_user_id == current_user.id:
+        if not week.user_id == current_user.id:
             return jsonify({'error': 'User is not the creator of the course'}), 403
         
         db.session.delete(material)

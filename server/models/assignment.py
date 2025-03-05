@@ -6,4 +6,5 @@ class Assignment(db.Model):
     name = db.Column(db.String(255), nullable=False)
     description = db.Column(db.Text, nullable=True)
     created_at = db.Column(db.DateTime, default=func.now())  
-    course_id = db.Column(db.Integer, db.ForeignKey("week.id"), nullable=False)
+    week_id = db.Column(db.Integer, db.ForeignKey("week.id"), nullable=False)
+    questions = db.relationship("Question", backref="question", cascade="all, delete-orphan")

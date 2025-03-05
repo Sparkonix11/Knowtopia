@@ -1,10 +1,10 @@
 from flask import Blueprint, request, jsonify
-from models import db, Review
+from models import db, Review, Material
 from flask_login import login_required, current_user
 
 review_api_bp = Blueprint('review_api', __name__)
 
-@review_api_bp.route('/materials/<int:material_id>/review', methods=['POST'])
+@review_api_bp.route('/<int:material_id>', methods=['POST'])
 @login_required
 def create_review(material_id):
     try:
@@ -16,6 +16,13 @@ def create_review(material_id):
         existing_review = Review.query.filter_by(user_id=current_user.id, material_id=material_id).first()
         if existing_review:
             return jsonify({'error': 'Review already exists'}), 400
+        
+        material = Material.query.filter_by(id=material_id).first()
+        if not material:
+            return jsonify({'error': 'Material not found'}), 404
+        
+        if int(data['rating']) < 1 or int(data['rating']) > 5:
+            return jsonify({'error': 'Rating must be between 1 and 5'}), 400
         
         new_review = Review(
             rating=data['rating'],

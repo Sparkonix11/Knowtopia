@@ -6,7 +6,7 @@ from werkzeug.utils import secure_filename
 
 course_api_bp = Blueprint('course_api', __name__)
 
-@course_api_bp.route('/courses', methods=['GET'])
+@course_api_bp.route('/all', methods=['GET'])
 def get_courses():
     try:
         courses = Course.query.all()
@@ -16,7 +16,7 @@ def get_courses():
                 'id': course.id,
                 'name': course.name,
                 'description': course.description,
-                'image': course.image
+                'thumbnail_path': course.thumbnail_path
             })
         return jsonify({'courses': course_data}), 200
     except Exception as e:
@@ -55,7 +55,7 @@ def get_instructor_courses():
                 total_course_duration += total_week_duration
 
                 weeks_data.append({
-                    "week_id": week.user_id,
+                    "week_id": week.id,
                     "week_name": week.name,
                     "materials": materials_data
                 })
@@ -71,7 +71,7 @@ def get_instructor_courses():
     except Exception as e:
         return jsonify({'error': f'Failed to get courses: {str(e)}'}), 500
     
-@course_api_bp.route('/course/<int:course_id>', methods=['GET'])
+@course_api_bp.route('/<int:course_id>', methods=['GET'])
 @login_required
 def get_course(course_id):
     try:
@@ -116,7 +116,7 @@ def get_course(course_id):
     except Exception as e:
         return jsonify({"error": f"Failed to fetch courses: {str(e)}"}), 500
     
-@course_api_bp.route('/create_course', methods=['POST'])
+@course_api_bp.route('/create', methods=['POST'])
 @login_required
 def create_course():
     try:
@@ -163,7 +163,7 @@ def create_course():
         db.session.rollback()
         return jsonify({'error': f'Failed to create course: {str(e)}'}), 500
     
-@course_api_bp.route('/delete_course/<int:course_id>', methods=['DELETE'])
+@course_api_bp.route('/<int:course_id>/delete', methods=['DELETE'])
 @login_required
 def delete_course(course_id):
     try:

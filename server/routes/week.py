@@ -4,7 +4,7 @@ from flask_login import login_required, current_user
 
 week_api_bp = Blueprint('week_api', __name__)
 
-@week_api_bp.route('/create_week/<int:course_id>', methods=['POST'])
+@week_api_bp.route('/<int:course_id>/create', methods=['POST'])
 @login_required
 def create_week(course_id):
     try:
@@ -28,7 +28,8 @@ def create_week(course_id):
         
         new_week = Week(
             name=data['name'],
-            course_id=course_id
+            course_id=course_id,
+            user_id=current_user.id
         )
 
         db.session.add(new_week)
@@ -37,6 +38,8 @@ def create_week(course_id):
         week_data = {
             'id': new_week.id,
             'name': new_week.name,
+            'course_id': new_week.course_id,
+            'user_id': new_week.user_id
         }
 
         return jsonify({'message': 'Week created', 'week': week_data}), 201
@@ -45,19 +48,19 @@ def create_week(course_id):
         db.session.rollback()
         return jsonify({'error': f'Failed to create week: {str(e)}'}), 500
     
-@week_api_bp.route('/delete_week/<int:week_id>', methods=['DELETE'])
+@week_api_bp.route('/<int:course_id>/<int:week_id>/delete', methods=['DELETE'])
 @login_required
-def delete_week(week_id):
+def delete_week(course_id, week_id):
     try:
         week = Week.query.get(week_id)
         if not week:
             return jsonify({'error': 'Week not found'}), 404
         
-        course = Course.query.get(week.course_id)
+        course = Course.query.get(course_id)
         if not course:
             return jsonify({'error': 'Course not found'}), 404
         
-        if course.creator_user_id != current_user.id:
+        if week.user_id != current_user.id:
             return jsonify({'error': 'User is not the creator of the course'}), 403
         
         db.session.delete(week)
