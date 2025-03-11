@@ -9,6 +9,7 @@ from .review import Review
 from .material import Material
 from .week import Week
 from .course import Course
+from .enrollment import Enrollment
 
 def init_db(app):
     with app.app_context():

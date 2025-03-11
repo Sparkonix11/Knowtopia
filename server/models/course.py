@@ -8,4 +8,6 @@ class Course(db.Model):
     creator_user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     created_at = db.Column(db.DateTime, default=func.now())  
     thumbnail_path = db.Column(db.String(255))  
-    weeks = db.relationship("Week", backref="week",cascade="all,delete-orphan")  
+    weeks = db.relationship("Week", backref="week",cascade="all,delete-orphan")
+
+    enrollments = db.relationship("Enrollment", back_populates="course", cascade="all, delete-orphan")

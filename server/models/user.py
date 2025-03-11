@@ -10,3 +10,6 @@ class User(db.Model, UserMixin):
     is_instructor = db.Column(db.Boolean, default=False)
     phone = db.Column(db.String(10), nullable=True)
     image = db.Column(db.String(100), default='/static/user_placeholder.png')
+
+    enrollments = db.relationship("Enrollment", back_populates="student", cascade="all, delete-orphan")
+
