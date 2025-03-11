@@ -1,4 +1,4 @@
-from flask import jsonify
+from flask import request
 from flask_restful import Resource, reqparse
 from flask_login import login_required, current_user
 from models import db, Question, Assignment
@@ -22,17 +22,17 @@ class QuestionCreateResource(Resource):
             if not assignment:
                 return {"error": "Invalid assignment_id"}, 404
 
-            args = self.parser.parse_args()
-            if args["correct_option"] not in ["1", "2", "3", "4"]:
+            data = request.form
+            if data["correct_option"] not in ["1", "2", "3", "4"]:
                 return {"error": "Correct option must be between 1 and 4"}, 400
 
             new_question = Question(
-                description=args["question_description"],
-                option1=args["option1"],
-                option2=args["option2"],
-                option3=args["option3"],
-                option4=args["option4"],
-                correct_option=args["correct_option"],
+                description=data["question_description"],
+                option1=data["option1"],
+                option2=data["option2"],
+                option3=data["option3"],
+                option4=data["option4"],
+                correct_option=data["correct_option"],
                 assignment_id=assignment_id
             )
             db.session.add(new_question)

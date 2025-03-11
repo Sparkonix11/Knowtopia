@@ -8,7 +8,7 @@ from werkzeug.utils import secure_filename
 UPLOAD_FOLDER = "uploads/materials"
 ALLOWED_EXTENSIONS = {"pdf", "mp4", "jpg", "png", "txt"}
 
-class MaterialResource(Resource):
+class MaterialCreateResource(Resource):
     @login_required
     def post(self, week_id):
         try:
@@ -19,12 +19,9 @@ class MaterialResource(Resource):
             if not week:
                 return {'error': 'Invalid week_id'}, 404
             
-            parser = reqparse.RequestParser()
-            parser.add_argument('name', required=True, help='Name is required')
-            parser.add_argument('duration', required=True, help='Duration is required')
-            args = parser.parse_args()
+            data = request.form
             
-            if Material.query.filter_by(name=args['name'], week_id=week_id).first():
+            if Material.query.filter_by(name=data['name'], week_id=week_id).first():
                 return {'error': 'Material already exists'}, 400
             
             if 'file' not in request.files:
@@ -40,8 +37,8 @@ class MaterialResource(Resource):
                 return {'error': 'File type not allowed'}, 400
             
             new_material = Material(
-                name=args['name'],
-                duration=args['duration'],
+                name=data['name'],
+                duration=data['duration'],
                 week_id=week_id,
                 filename=filename
             )
