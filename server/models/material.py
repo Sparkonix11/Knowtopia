@@ -8,6 +8,7 @@ class Material(db.Model):
     duration = db.Column(db.Integer,nullable=False)
     filename = db.Column(db.String(255), nullable=False)
     file_path = db.Column(db.String(255))
+    transcript_path = db.Column(db.String(255))
     created_at = db.Column(db.DateTime, default=func.now())  
     #course = db.relationship("Week", backref="materials")
     reviews = db.relationship("Review", backref="review", cascade="all, delete-orphan")

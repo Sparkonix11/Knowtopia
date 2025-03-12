@@ -46,6 +46,7 @@ def init_routes(app):
     # User Routes
     api.add_resource(UserProfileResource, '/user')
     api.add_resource(UserStudentListResource, '/user/students')
+    
     # Week Routes
     api.add_resource(WeekCreateResource, '/week/create/<int:course_id>')
     api.add_resource(WeekDeletionResource, '/week/delete/<int:course_id>/<int:week_id>')
