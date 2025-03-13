@@ -11,7 +11,11 @@ def get_user_data(user):
         'fname': user.fname,
         'lname': user.lname,
         'is_instructor': user.is_instructor,
-        'image': user.image
+        'image': user.image,
+        'dob': user.dob.isoformat() if user.dob else None,
+        'phone': user.phone,
+        'gender': user.gender,
+        'about': user.about
     }
 
 

@@ -90,11 +90,7 @@ const signup = async () => {
         const response = await store.dispatch("user/signup", formData);
         
         if (response.status === 201) {
-            if (!user.value?.is_instructor) {
-            router.push({ name: "StudentDashboard" });
-            } else {
-                router.push({ name: "InstructorDashboard" });
-            }
+            router.push({ name: "Profile" });
         } else {
             errorMessage.value = response.message || "Registration failed. Please try again.";
         }
