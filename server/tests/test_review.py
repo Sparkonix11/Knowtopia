@@ -9,13 +9,13 @@ def test_create_review(student_session):
         "title": "Test Material",
         "description": "Material for review testing"
     }
-    create_material_response = student_session.post(
-        ENDPOINTS["create_material"], 
+    material_create_response = student_session.post(
+        ENDPOINTS["material_create"], 
         data=material_data,
         headers={"Content-Type": "application/x-www-form-urlencoded"}
     )
-    assert create_material_response.status_code == 201
-    material_id = create_material_response.json()["material"]["id"]
+    assert material_create_response.status_code == 201
+    material_id = material_create_response.json()["material"]["id"]
 
     # Create a review using form data
     review_data = {
@@ -43,13 +43,13 @@ def test_create_review_missing_fields(student_session):
         "title": "Material Missing Fields",
         "description": "Checking required fields"
     }
-    create_material_response = student_session.post(
-        ENDPOINTS["create_material"], 
+    material_create_response = student_session.post(
+        ENDPOINTS["material_create"], 
         data=material_data,
         headers={"Content-Type": "application/x-www-form-urlencoded"}
     )
-    assert create_material_response.status_code == 201
-    material_id = create_material_response.json()["material"]["id"]
+    assert material_create_response.status_code == 201
+    material_id = material_create_response.json()["material"]["id"]
 
     # Attempt to create review with missing comment field
     incomplete_data = {"rating": "4"}
@@ -68,13 +68,13 @@ def test_create_review_invalid_rating(student_session):
         "title": "Material Invalid Rating",
         "description": "Checking rating validation"
     }
-    create_material_response = student_session.post(
-        ENDPOINTS["create_material"], 
+    material_create_response = student_session.post(
+        ENDPOINTS["material_create"], 
         data=material_data,
         headers={"Content-Type": "application/x-www-form-urlencoded"}
     )
-    assert create_material_response.status_code == 201
-    material_id = create_material_response.json()["material"]["id"]
+    assert material_create_response.status_code == 201
+    material_id = material_create_response.json()["material"]["id"]
 
     # Test rating too high
     high_rating_data = {
@@ -109,13 +109,13 @@ def test_create_review_duplicate(student_session):
         "title": "Material Duplicate Review",
         "description": "Checking duplicate review prevention"
     }
-    create_material_response = student_session.post(
-        ENDPOINTS["create_material"], 
+    material_create_response = student_session.post(
+        ENDPOINTS["material_create"], 
         data=material_data,
         headers={"Content-Type": "application/x-www-form-urlencoded"}
     )
-    assert create_material_response.status_code == 201
-    material_id = create_material_response.json()["material"]["id"]
+    assert material_create_response.status_code == 201
+    material_id = material_create_response.json()["material"]["id"]
 
     # Create first review
     review_data = {
