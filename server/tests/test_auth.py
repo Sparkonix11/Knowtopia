@@ -1,76 +1,95 @@
-import pytest
 import requests
-
-BASE_URL = "http://127.0.0.1:5000/api/v1/auth"  
-
-@pytest.fixture
-def valid_user():
-    return {
-        "email": "dummyuser@ds.study.iitm.ac.in",
-        "password": "dummyPass@1",
-        "password_confirm": "dummyPass@1",
-        "fname": "Dummy",
-        "lname": "User"
-    }
+from tests import ENDPOINTS
 
 def test_signup_success(valid_user):
-    #Test for successful user registration
-    response = requests.post(f"{BASE_URL}/signup", data=valid_user)
+    """Test for successful user registration"""
+    response = requests.post(ENDPOINTS["signup"], data=valid_user, headers={'Content-Type': 'application/x-www-form-urlencoded'})
     assert response.status_code == 201
-    assert response.json()["message"] == "User created"
+    assert response.json()["message"] == "User created successfully"
+
 
 def test_signup_password_mismatch():
-    #Test registration fails when passwords do not match
+    """Test registration fails when passwords do not match"""
     user_data = {
-        "email": "dummyuser@ds.study.iitm.ac.in",
+        "email": "dummyuser@mail.com",
         "password": "dummyPass@1",
-        "password_confirm": "dumPass@111",
+        "password_confirm": "wrongPass@111",
         "fname": "Dummy",
-        "lname": "User"
+        "lname": "User",
+        "is_instructor": "false"
     }
-    response = requests.post(f"{BASE_URL}/signup", data=user_data)
+    response = requests.post(ENDPOINTS["signup"], data=user_data, headers={'Content-Type': 'application/x-www-form-urlencoded'})
     assert response.status_code == 400
     assert response.json()["error"] == "Passwords do not match"
 
+
 def test_signup_missing_fields():
-    #Test registration fails for required field missing
+    """Test registration fails for missing required fields"""
     user_data = {
-        "email": "dummyuser@ds.study.iitm.ac.in",
+        "email": "dummyuser@mail.com",
         "password": "dummyPass@1",
         "password_confirm": "dummyPass@1",
-        "fname": "Dummy"
-        #Missing 'lname'
+        "is_instructor": "false"
+        # Missing 'fname' and 'lname'
     }
-    response = requests.post(f"{BASE_URL}/signup", data=user_data)
+    response = requests.post(ENDPOINTS["signup"], data=user_data, headers={'Content-Type': 'application/x-www-form-urlencoded'})
     assert response.status_code == 400
     assert response.json()["error"] == "Missing required fields"
-    print(response.json())
+
 
 def test_signup_existing_user(valid_user):
-    #Test registration fails for an existing user
-    #user is registered first
-    requests.post(f"{BASE_URL}/signup", data=valid_user)
-    #Trying to register again with the same email
-    response = requests.post(f"{BASE_URL}/signup", data=valid_user)
+    """Test registration fails for an existing user"""
+    requests.post(ENDPOINTS["signup"], data=valid_user, headers={'Content-Type': 'application/x-www-form-urlencoded'})
+    response = requests.post(ENDPOINTS["signup"], data=valid_user, headers={'Content-Type': 'application/x-www-form-urlencoded'})
     assert response.status_code == 400
     assert response.json()["error"] == "User already exists"
 
-def test_login_success():
-    #Test for successful user login
+
+def test_login_success(valid_user):
+    """Test successful user login"""
+    # Ensure user is registered
+    requests.post(ENDPOINTS["signup"], data=valid_user, headers={'Content-Type': 'application/x-www-form-urlencoded'})
+
     login_data = {
-        "email": "dummyuser@ds.study.iitm.ac.in",
-        "password": "dummyPass@1"
+        "email": valid_user["email"],
+        "password": valid_user["password"]
     }
-    response = requests.post(f"{BASE_URL}/login", data=login_data)
+    response = requests.post(ENDPOINTS["login"], data=login_data, headers={'Content-Type': 'application/x-www-form-urlencoded'})
     assert response.status_code == 200
-    assert response.json()["message"] == "User logged in"
+    assert response.json()["message"] == "Login successful"
+
 
 def test_login_invalid_credentials():
-    #Test login fails with wrong password
+    """Test login fails with incorrect credentials"""
     login_data = {
-        "email": "dummyuser@ds.study.iitm.ac.in",
+        "email": "dummyuser@mail.com",
         "password": "wrongPass@1"
     }
-    response = requests.post(f"{BASE_URL}/login", data=login_data)
-    assert response.status_code == 400
+    response = requests.post(ENDPOINTS["login"], data=login_data, headers={'Content-Type': 'application/x-www-form-urlencoded'})
+    assert response.status_code == 401
     assert response.json()["error"] == "Invalid credentials"
+
+
+def test_logout():
+    """Test successful user logout using session cookies"""
+    session = requests.Session()
+
+    login_data = {
+        "email": "dummyuser@mail.com",
+        "password": "dummyPass@1"
+    }
+
+    # Log in to get session cookie
+    login_response = session.post(
+        ENDPOINTS["login"], 
+        data=login_data, 
+        headers={'Content-Type': 'application/x-www-form-urlencoded'}
+    )
+    
+    assert login_response.status_code == 200
+
+    # Logout request using session
+    response = session.post(ENDPOINTS["logout"])
+    
+    assert response.status_code == 200
+    assert response.json()["message"] == "Logout successful"

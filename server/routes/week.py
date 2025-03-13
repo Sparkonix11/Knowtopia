@@ -1,4 +1,4 @@
-from flask import request, jsonify
+from flask import request
 from flask_restful import Resource
 from models import db, Week, Course
 from flask_login import login_required, current_user
