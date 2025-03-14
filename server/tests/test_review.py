@@ -1,80 +1,31 @@
-import pytest
 import requests
 from tests import ENDPOINTS
+from tests.conftest import create_test_review, delete_test_review, create_test_material, delete_test_material
 
-def test_create_review(student_session):
+def test_create_review(instructor_session, student_session):
     """Test successfully creating a review for a material"""
     # Create a test material using form data
-    material_data = {
-        "title": "Test Material",
-        "description": "Material for review testing"
-    }
-    material_create_response = student_session.post(
-        ENDPOINTS["material_create"], 
-        data=material_data,
-        headers={"Content-Type": "application/x-www-form-urlencoded"}
-    )
-    assert material_create_response.status_code == 201
-    material_id = material_create_response.json()["material"]["id"]
+    course_id, week_id, material_id, review_id = create_test_review(instructor_session, student_session)
+    delete_test_review(instructor_session, student_session, course_id, week_id, material_id, review_id)
 
-    # Create a review using form data
-    review_data = {
-        "rating": "5",  # Send as string since form data is always strings
-        "comment": "Excellent material!"
-    }
-    response = student_session.post(
-        ENDPOINTS["review"].format(material_id=material_id), 
-        data=review_data,
-        headers={"Content-Type": "application/x-www-form-urlencoded"}
-    )
-    
-    # Verify response
-    assert response.status_code == 201
-    assert response.json()["message"] == "Review created"
-    assert response.json()["review"]["rating"] == 5  # Check as integer since backend converts it
-    assert response.json()["review"]["comment"] == "Excellent material!"
-    assert response.json()["review"]["material_id"] == material_id
-    assert "user_id" in response.json()["review"]
-
-def test_create_review_missing_fields(student_session):
+def test_create_review_missing_fields(student_session, instructor_session):
     """Test creating a review with missing fields"""
     # Create a test material
-    material_data = {
-        "title": "Material Missing Fields",
-        "description": "Checking required fields"
-    }
-    material_create_response = student_session.post(
-        ENDPOINTS["material_create"], 
-        data=material_data,
-        headers={"Content-Type": "application/x-www-form-urlencoded"}
-    )
-    assert material_create_response.status_code == 201
-    material_id = material_create_response.json()["material"]["id"]
+    course_id, week_id, material_id = create_test_material(instructor_session)
 
     # Attempt to create review with missing comment field
     incomplete_data = {"rating": "4"}
     response = student_session.post(
         ENDPOINTS["review"].format(material_id=material_id), 
-        data=incomplete_data,
-        headers={"Content-Type": "application/x-www-form-urlencoded"}
+        data=incomplete_data
     )
     assert response.status_code == 400
     assert response.json()["error"] == "Missing required fields"
+    delete_test_material(instructor_session, course_id, week_id, material_id)
 
-def test_create_review_invalid_rating(student_session):
+def test_create_review_invalid_rating(student_session, instructor_session):
     """Test creating a review with an invalid rating"""
-    # Create a test material
-    material_data = {
-        "title": "Material Invalid Rating",
-        "description": "Checking rating validation"
-    }
-    material_create_response = student_session.post(
-        ENDPOINTS["material_create"], 
-        data=material_data,
-        headers={"Content-Type": "application/x-www-form-urlencoded"}
-    )
-    assert material_create_response.status_code == 201
-    material_id = material_create_response.json()["material"]["id"]
+    course_id, week_id, material_id = create_test_material(instructor_session)
 
     # Test rating too high
     high_rating_data = {
@@ -83,8 +34,7 @@ def test_create_review_invalid_rating(student_session):
     }
     response = student_session.post(
         ENDPOINTS["review"].format(material_id=material_id), 
-        data=high_rating_data,
-        headers={"Content-Type": "application/x-www-form-urlencoded"}
+        data=high_rating_data
     )
     assert response.status_code == 400
     assert response.json()["error"] == "Rating must be between 1 and 5"
@@ -97,46 +47,29 @@ def test_create_review_invalid_rating(student_session):
     response = student_session.post(
         ENDPOINTS["review"].format(material_id=material_id), 
         data=low_rating_data,
-        headers={"Content-Type": "application/x-www-form-urlencoded"}
     )
     assert response.status_code == 400
     assert response.json()["error"] == "Rating must be between 1 and 5"
+    delete_test_material(instructor_session, course_id, week_id, material_id)
 
-def test_create_review_duplicate(student_session):
+def test_create_review_duplicate(student_session, instructor_session):
     """Test creating a duplicate review by the same user"""
     # Create a test material
-    material_data = {
-        "title": "Material Duplicate Review",
-        "description": "Checking duplicate review prevention"
-    }
-    material_create_response = student_session.post(
-        ENDPOINTS["material_create"], 
-        data=material_data,
-        headers={"Content-Type": "application/x-www-form-urlencoded"}
-    )
-    assert material_create_response.status_code == 201
-    material_id = material_create_response.json()["material"]["id"]
+    course_id, week_id, material_id, review_id = create_test_review(instructor_session, student_session)
 
     # Create first review
     review_data = {
         "rating": "4",
         "comment": "Great material!"
     }
-    first_response = student_session.post(
-        ENDPOINTS["review"].format(material_id=material_id), 
-        data=review_data,
-        headers={"Content-Type": "application/x-www-form-urlencoded"}
-    )
-    assert first_response.status_code == 201
-    
     # Attempt to create duplicate review
     duplicate_response = student_session.post(
         ENDPOINTS["review"].format(material_id=material_id), 
-        data=review_data,
-        headers={"Content-Type": "application/x-www-form-urlencoded"}
+        data=review_data
     )
     assert duplicate_response.status_code == 400
     assert duplicate_response.json()["error"] == "Review already exists"
+    delete_test_review(instructor_session, student_session, course_id, week_id, material_id, review_id)
 
 def test_create_review_nonexistent_material(student_session):
     """Test creating a review for a non-existent material"""

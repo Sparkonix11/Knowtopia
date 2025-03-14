@@ -46,3 +46,22 @@ class ReviewResource(Resource):
         except Exception as e:
             db.session.rollback()
             return {'error': f'Failed to create review: {str(e)}'}, 500
+
+class ReviewDeleteResource(Resource):
+    @login_required
+    def delete(self, review_id):
+        try:
+            review = Review.query.filter_by(id=review_id, user_id=current_user.id).first()
+            
+            if not review:
+                return {'error': 'Review not found or unauthorized'}, 404
+            
+            db.session.delete(review)
+            db.session.commit()
+            
+            return {'message': 'Review deleted successfully'}, 200
+        
+        except Exception as e:
+            db.session.rollback()
+            return {'error': f'Failed to delete review: {str(e)}'}, 500
+

@@ -117,6 +117,8 @@ class DeleteCourseResource(Resource):
     @login_required
     def delete(self, course_id):
         try:
+            if not current_user.is_instructor:
+                return {'error': 'User is not an instructor'}, 403
             course = Course.query.get(course_id)
             if not course:
                 return {'error': 'Course not found'}, 404

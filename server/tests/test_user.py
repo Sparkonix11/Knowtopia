@@ -40,8 +40,16 @@ def test_update_user_profile_invalid_image(student_session):
 def test_update_password_correct(student_session):
     """Test updating password with correct current password"""
     password_data = {
-        "current_password": "oldpassword",
+        "current_password": "password123",
         "new_password": "newsecurepassword"
+    }
+    response = student_session.put(ENDPOINTS["user_profile"], data=password_data)
+    assert response.status_code == 200
+    assert response.json()["message"] == "Profile updated successfully"
+
+    password_data = {
+        "current_password": "newsecurepassword",
+        "new_password": "password123"
     }
     response = student_session.put(ENDPOINTS["user_profile"], data=password_data)
     assert response.status_code == 200

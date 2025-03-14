@@ -9,6 +9,7 @@ import os
 
 PFP_FOLDER = "uploads/pfp"
 ALLOWED_EXTENSIONS = {"jpg", "jpeg", "png"}
+SECRET_KEY = "mysecretkey"
 
 def get_user_data(user):
     return {
@@ -107,3 +108,30 @@ class UserStudentListResource(Resource):
             }, 200
         except Exception as e:
             return {'error': f'Failed to get students: {str(e)}'}, 500
+
+class DeleteUserResource(Resource):
+    def delete(self, user_id):
+        try:
+            data = request.form
+            provided_secret_key = data.get("secret_key")
+            
+            if provided_secret_key != SECRET_KEY:
+                return {'error': 'Unauthorized request'}, 403
+            
+            user = User.query.get(user_id)
+            if not user:
+                return {'error': 'User not found'}, 404
+            
+            # Delete profile image if exists
+            # if user.image:
+            #     image_path = user.image.lstrip("/")
+            #     if os.path.exists(image_path):
+            #         os.remove(image_path)
+            
+            db.session.delete(user)
+            db.session.commit()
+            
+            return {'message': 'User deleted successfully'}, 200
+        except Exception as e:
+            db.session.rollback()
+            return {'error': f'Failed to delete user: {str(e)}'}, 500

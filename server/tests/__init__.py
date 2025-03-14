@@ -27,9 +27,11 @@ ENDPOINTS = {
     "question_delete": f"{BASE_URL}/question/delete/{{question_id}}",
 
     "review": f"{BASE_URL}/review/{{material_id}}",
+    "review_delete": f"{BASE_URL}/review/delete/{{review_id}}",
 
     "user_profile": f"{BASE_URL}/user",
     "user_students": f"{BASE_URL}/user/students",
+    "user_delete": f"{BASE_URL}/user/delete/{{user_id}}",
 
     "week_create": f"{BASE_URL}/week/create/{{course_id}}",
     "week_delete": f"{BASE_URL}/week/delete/{{course_id}}/{{week_id}}",

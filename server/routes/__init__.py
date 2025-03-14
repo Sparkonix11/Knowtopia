@@ -4,8 +4,8 @@ from .auth import SignupResource, LoginResource, LogoutResource
 from .course import CourseResource, CreateCourseResource, InstructorCoursesResource, DeleteCourseResource, EnrolledCoursesResource, EnrollStudentResource
 from .material import MaterialCreateResource, MaterialDeleteResource
 from .question import QuestionCreateResource, QuestionListResource, QuestionDeleteResource
-from .review import ReviewResource
-from .user import UserProfileResource, UserStudentListResource
+from .review import ReviewResource, ReviewDeleteResource
+from .user import UserProfileResource, UserStudentListResource, DeleteUserResource
 from .week import WeekCreateResource, WeekDeletionResource
 from .ai import AskResource, QuestionHintResource
 
@@ -42,10 +42,12 @@ def init_routes(app):
 
     # Review Routes
     api.add_resource(ReviewResource, '/review/<int:material_id>')
+    api.add_resource(ReviewDeleteResource, '/review/delete/<int:review_id>')
 
     # User Routes
     api.add_resource(UserProfileResource, '/user')
     api.add_resource(UserStudentListResource, '/user/students')
+    api.add_resource(DeleteUserResource, '/user/delete/<int:user_id>')
     
     # Week Routes
     api.add_resource(WeekCreateResource, '/week/create/<int:course_id>')
