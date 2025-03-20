@@ -1,14 +1,17 @@
 <script setup>
 import CreateSubLectureView from './CreateSubLectureView.vue';
-import { ref } from 'vue';
+import CreateLecture from '../components/CreateLecture.vue';
+import { ref, computed } from 'vue';
+import { useCreateLectures } from '../handlers/useCreateLectures';
+import { useStore } from 'vuex';
 
-const props = defineProps({
-  lectures: {
-    type: Array,
-    required: true,
-    default: () => []
-  }
-});
+const store = useStore();
+
+const { creatingCourse, creatingCourseWeeks, updateWeeks } = useCreateLectures();
+
+const lectures = computed(() => creatingCourseWeeks.value);
+console.log(lectures);
+
 
 const emit = defineEmits(["toggleCreateLecture"]);
 const toggleCreateLecture = () => {
@@ -22,8 +25,17 @@ const toggleLecture = (name) => {
 };
 
 const showCreateSubLecture = ref(false);
-const toggleCreateSubLecture = () => {
+const toggleCreateSubLecture = (weekId) => {
+    store.commit('course/SET_CREATING_WEEK', weekId);
     showCreateSubLecture.value = !showCreateSubLecture.value;
+    updateWeeks();
+};
+
+const showAddLecture = ref(false);
+const toggleAddLecture = () => {
+    
+    showAddLecture.value = !showAddLecture.value;
+    updateWeeks();
 };
 </script>
 
@@ -64,14 +76,14 @@ const toggleCreateSubLecture = () => {
                         <!-- Sub lectures dropdown -->
                         <div v-if="openLectures[lecture.name]" class="rounded-[50px]">
                             <md-list-item 
-                            v-for="subLecture in lecture.subLectures" 
+                            v-for="subLecture in lecture.materials" 
                             :key="subLecture"
                             class="rounded-[100px] px-15 border-b border-(--md-sys-color-outline-variant)"
                             >
                             <div slot="start">
                                 <md-icon>subdirectory_arrow_right</md-icon>
                             </div>
-                            <span>{{ subLecture }}</span>
+                            <span>{{ subLecture.material_name }}</span>
                             <div slot="end" class="flex gap-2">
                                 <md-icon-button>
                                 <md-icon>edit</md-icon>
@@ -82,7 +94,7 @@ const toggleCreateSubLecture = () => {
                             </div>
                             </md-list-item>
                             <div class="flex justify-end">
-                                <md-outlined-button class="w-35 h-12 m-4" @click="toggleCreateSubLecture">
+                                <md-outlined-button class="w-35 h-12 m-4" @click="toggleCreateSubLecture(lecture.id)">
                                     <md-icon slot="icon">add</md-icon>Add Lecture
                                 </md-outlined-button>
                             </div>
@@ -92,12 +104,15 @@ const toggleCreateSubLecture = () => {
                         </md-list>
                     </div>
                 </div>
-
-                <div class="flex justify-end w-[50%] mt-8"><md-filled-button class="w-30 h-12" @click="toggleCreateLecture"> Save </md-filled-button></div>
+                <div class="flex justify-end w-[50%] mt-8 gap-5">
+                    <md-filled-button class="w-30 h-12" @click="toggleAddLecture"> Add </md-filled-button>
+                    <md-filled-button class="w-30 h-12" @click="toggleCreateLecture"> Save </md-filled-button>
+                </div>
 
             </div>
         </div>
     </div>
     <CreateSubLectureView v-if="showCreateSubLecture" @toggleCreateSubLecture="toggleCreateSubLecture" />
+    <CreateLecture v-if="showAddLecture" @toggleAddLecture="toggleAddLecture" />
 
 </template>

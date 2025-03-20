@@ -6,7 +6,9 @@ export default {
         courses: [],
         enrolledCourses: [],
         instructorCourses: [],
-        instructorLectures: []
+        creatingCourse: null,
+        creatingWeek: null,
+        creatingCourseWeeks: [],
     },
     mutations: {
         SET_COURSES(state, courses) {
@@ -20,6 +22,16 @@ export default {
         },
         SET_INSTRUCTOR_LECTURES(state, lectures) {
             state.instructorLectures = lectures;
+        },
+        SET_CREATING_COURSE(state, course) {
+            state.creatingCourse = course;
+            state.creatingCourseWeeks = [];
+        },
+        SET_CREATING_WEEK(state, week) {
+            state.creatingWeek = week;
+        },
+        SET_CREATING_COURSE_WEEKS(state, weeks) {
+            state.creatingCourseWeeks = [...weeks];
         }
     },
     actions: {
@@ -45,11 +57,17 @@ export default {
                 return error.response;
             }
         },
-        async updateInstructorCourses({ commit }) {
+        async updateInstructorCourses({ commit, state }) {
             try {
                 const response = await getInstructorCoursesAPI();
                 if (response.status === 200) {
                     commit('SET_INSTRUCTOR_COURSES', response.data.courses);
+
+                    if (state.creatingCourse) {
+                        const creatingCourseId = state.creatingCourse.id;
+                        const courseData = response.data.courses.find(course => course.id === creatingCourseId);
+                        commit('SET_CREATING_COURSE_WEEKS', courseData ? courseData.weeks : []);
+                    }
                 }
                 return response;
             } catch (error) {
@@ -61,6 +79,8 @@ export default {
         getCourses: (state) => state.courses,
         getEnrolledCourses: (state) => state.enrolledCourses,
         getInstructorCourses: (state) => state.instructorCourses,
-        getInstructorLectures: (state) => state.instructorLectures
+        getCreatingCourse: (state) => state.creatingCourse,
+        getCreatingWeek: (state) => state.creatingWeek,
+        getCreatingCourseWeeks: (state) => state.creatingCourseWeeks,
     }
 };

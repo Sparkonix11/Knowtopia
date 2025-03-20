@@ -54,8 +54,8 @@ class InstructorCoursesResource(Resource):
                     
                     total_course_duration += total_week_duration
                     weeks_data.append({
-                        "week_id": week.id,
-                        "week_name": week.name,
+                        "id": week.id,
+                        "name": week.name,
                         "materials": materials_data
                     })
                 

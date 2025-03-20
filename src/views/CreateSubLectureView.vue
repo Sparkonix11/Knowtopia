@@ -1,5 +1,19 @@
 <script setup>
 import { ref } from "vue";
+import { useCreateMaterial } from "../handlers/useCreateSubLecture";
+
+const { createMaterial, error } = useCreateMaterial();
+
+const name = ref("");
+const duration = ref("");
+const selectedFile = ref(null); // Define selectedFile
+
+const updateName = (event) => {
+    name.value = event.target.value;
+};
+const updateDuration = (event) => {
+    duration.value = event.target.value;
+};
 
 const fileInputRef = ref(null);
 const previewUrl = ref(null);
@@ -8,6 +22,8 @@ const selectFile = (event) => {
     const file = event.target.files[0];
 
     if (file) {
+        selectedFile.value = file; // Store the file in the reactive variable
+
         // Create a URL for the preview if the file is an image
         if (file.type.startsWith("image/")) {
             previewUrl.value = URL.createObjectURL(file);
@@ -20,13 +36,26 @@ const openFileSelector = () => {
     fileInputRef.value.click();
 };
 
-const emit = defineEmits(["toggleCreateSubLecture, toggleCreateLecture"]);
+const emit = defineEmits(["toggleCreateSubLecture", "toggleCreateLecture"]);
 
 const toggleCreateSubLecture = () => {
     emit("toggleCreateSubLecture");
     emit("toggleCreateLecture");
 };
+
+const handleCreateMaterial = async () => {
+    if (!selectedFile.value) {
+        console.error("No file selected.");
+        return;
+    }
+
+    const response = await createMaterial(name.value, duration.value, selectedFile.value);
+    if (response) {
+        toggleCreateSubLecture();
+    }
+};
 </script>
+
 
 <template>
     <div class="flex justify-center items-center w-full h-full absolute top-0">
@@ -57,13 +86,13 @@ const toggleCreateSubLecture = () => {
                     </div>
                     <input ref="fileInputRef" type="file" class="hidden" @change="selectFile" />
                 </div>
-                <md-outlined-text-field class="w-200" label="Title" placeholder="Enter Lecture Title"></md-outlined-text-field>
-                <md-outlined-text-field class="w-200" label="Duration" placeholder="Enter Lecture Duration"></md-outlined-text-field>
-                <md-outlined-text-field class="w-200" type="textarea" label="Description" placeholder="Enter Lecture Description" rows="3"></md-outlined-text-field>
+                <md-outlined-text-field class="w-200" label="Title" placeholder="Enter Lecture Title" @change="updateName" :value="name"></md-outlined-text-field>
+                <md-outlined-text-field class="w-200" label="Duration" placeholder="Enter Lecture Duration" @change="updateDuration" :value="duration"></md-outlined-text-field>
+                <!-- <md-outlined-text-field class="w-200" type="textarea" label="Description" placeholder="Enter Lecture Description" rows="3"></md-outlined-text-field> -->
 
 
 
-                <div class="flex justify-end w-200 mt-4"><md-filled-button class="w-30 h-12" @click="toggleCreateSubLecture"> Save </md-filled-button></div>
+                <div class="flex justify-end w-200 mt-4"><md-filled-button class="w-30 h-12" @click="handleCreateMaterial"> Save </md-filled-button></div>
             </div>
         </div>
     </div>
