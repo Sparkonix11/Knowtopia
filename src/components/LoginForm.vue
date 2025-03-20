@@ -1,49 +1,15 @@
 <script setup>
-import { ref, computed } from "vue";
-import { useStore } from "vuex";
-import { useRouter } from "vue-router";
+import { useLogin } from "../handlers/useLogin";
 
-const router = useRouter();
-const store = useStore();
-
-
-const selected = ref("student");
-const errorMessage = ref("");
-const email = ref("");
-const password = ref("");
-
-const updateEmail = (event) => {
-    email.value = event.target.value;
-};
-const updatePassword = (event) => {
-    password.value = event.target.value;
-};
-
-const user = computed(() => store.getters["user/currentUser"]);
-
-
-const login = async () => {
-    errorMessage.value = "";
-    if (!email.value.trim() || !password.value.trim()) {
-        errorMessage.value = "Please enter both email and password.";
-        return;
-    }
-    const formData = new FormData();
-    formData.append('email', email.value);
-    formData.append('password', password.value);
-
-    const response = await store.dispatch("user/login", formData);
-
-    if (response.status === 200) {
-        if (!user.value?.is_instructor) {
-            router.push({ name: "StudentDashboard" });
-        } else {
-            router.push({ name: "InstructorDashboard" });
-        }
-    } else {
-        errorMessage.value = response.message || "Login failed. Please try again.";
-    }
-};
+const {
+  selected,
+  errorMessage,
+  email,
+  password,
+  updateEmail,
+  updatePassword,
+  login
+} = useLogin();
 </script>
 
 <template>
@@ -71,6 +37,8 @@ const login = async () => {
             </button>
         </div> -->
 
+        <div v-if="errorMessage" class="text-red-500">{{ errorMessage }}</div>
+
         <md-outlined-text-field
             @input="updateEmail"
             label="Email Address"
@@ -81,7 +49,6 @@ const login = async () => {
 
         <md-outlined-text-field
             @input="updatePassword"
-            v-model="password"
             label="Password"
             placeholder="Enter Password"
             type="password"

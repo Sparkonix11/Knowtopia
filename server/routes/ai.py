@@ -12,7 +12,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
-# client = openai.OpenAI(api_key= os.getenv("FLASK_SECRET_KEY"))
+client = openai.OpenAI(api_key= os.getenv("OPENAI_API_KEY"))
 
 def extract_text_from_pdf(file_path):
   
@@ -149,3 +149,42 @@ class QuestionHintResource(Resource):
             return {"error": f"OpenAI API error: {str(e)}"}, 500
 
         return jsonify({"question": question, "hint": hint})
+
+class SummarizeResource(Resource):
+    def post(self):
+        data = request.get_json(force=True)
+        document_name = data.get("document_name", "").strip()
+
+        if not document_name:
+            return {"error": "Both 'question' and 'document_name' are required."}, 400
+
+        base_dir = "documents"
+        file_path = os.path.join(base_dir, document_name)
+
+        if not os.path.exists(file_path):
+            return {"error": f"File '{document_name}' not found."}, 404
+
+        all_text = extract_text_from_file(file_path)
+        print(all_text)
+
+        if not all_text.strip():
+            return {"error": "No text could be extracted from the specified folder."}, 400
+
+        try:
+            response = client.chat.completions.create(
+                model="gpt-4",
+                messages=[
+                    {"role": "system", "content": "You are a helpful AI assistant."},
+                    {"role": "user", "content": f"Question: Provide a summary of the following text in bullet points.\n{all_text}"},
+                ],
+                max_tokens=300,
+                temperature=0.7,
+                n=1
+            )
+            answer = response.choices[0].message.content.strip()
+        except Exception as e:
+            return {"error": f"OpenAI API error: {str(e)}"}, 500
+
+        topic_heading = extract_topic_heading(answer)
+        return jsonify({"topic": topic_heading, "summary": answer})
+

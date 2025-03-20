@@ -35,6 +35,7 @@ export const questionEndpoints = {
 
 export const reviewEndpoints = {
     REVIEW: (materialId) => `${API_URL}/review/${materialId}`,
+    DELETE_REVIEW: (reviewId) => `${API_URL}/review/delete/${reviewId}`,
 };
 
 export const userEndpoints = {

@@ -78,7 +78,7 @@ class UserProfileResource(Resource):
                     image_filename = secure_filename(f"{user.id}.{file_ext}")
                     image_path = os.path.join(PFP_FOLDER, image_filename)
                     image_file.save(image_path)
-                    user.image = f"/uploads/pfp/{image_filename}"
+                    user.image = f"/{PFP_FOLDER}/{image_filename}"
 
             
             db.session.commit()

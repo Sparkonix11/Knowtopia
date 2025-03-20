@@ -1,103 +1,26 @@
 <script setup>
-import { ref, computed } from "vue";
-import { useStore } from "vuex";
-import { useRouter } from "vue-router";
+import { useSignup } from "../handlers/useSignup";
 
-const router = useRouter();
-const store = useStore();
-
-const selected = ref("student");
-const errorMessage = ref("");
-
-const firstName = ref("");
-const lastName = ref("");
-const email = ref("");
-const countryCode = ref("+91");
-const phoneNumber = ref("");
-const password = ref("");
-const confirmPassword = ref("");
-
-const is_instructor = computed(() => selected.value === "instructor");
-
-const fullPhoneNumber = computed(() => countryCode.value + phoneNumber.value);
-
-const user = computed(() => store.getters["user/currentUser"]);
-
-// Update handlers
-const updateFirstName = (event) => {
-    firstName.value = event.target.value;
-};
-const updateLastName = (event) => {
-    lastName.value = event.target.value;
-};
-const updateEmail = (event) => {
-    email.value = event.target.value;
-};
-const updateCountryCode = (event) => {
-    countryCode.value = event.target.value;
-};
-const updatePhoneNumber = (event) => {
-    phoneNumber.value = event.target.value;
-};
-const updatePassword = (event) => {
-    password.value = event.target.value;
-};
-const updateConfirmPassword = (event) => {
-    confirmPassword.value = event.target.value;
-};
-
-const signup = async () => {
-    errorMessage.value = "";
-    
-    // Validation
-    if (!firstName.value.trim() || !lastName.value.trim()) {
-        errorMessage.value = "Please enter both first and last name.";
-        return;
-    }
-    
-    if (!email.value.trim()) {
-        errorMessage.value = "Please enter your email address.";
-        return;
-    }
-    
-    if (!phoneNumber.value.trim()) {
-        errorMessage.value = "Please enter your phone number.";
-        return;
-    }
-    
-    if (!password.value.trim() || !confirmPassword.value.trim()) {
-        errorMessage.value = "Please enter both password fields.";
-        return;
-    }
-    
-    if (password.value !== confirmPassword.value) {
-        errorMessage.value = "Passwords do not match.";
-        return;
-    }
-    
-    // Create FormData for submission
-    const formData = new FormData();
-    formData.append('is_instructor', is_instructor.value);
-    formData.append('fname', firstName.value);
-    formData.append('lname', lastName.value);
-    formData.append('email', email.value);
-    formData.append('phone', fullPhoneNumber.value);
-    formData.append('password', password.value);
-    formData.append('password_confirm', confirmPassword.value);
-
-    
-    try {
-        const response = await store.dispatch("user/signup", formData);
-        
-        if (response.status === 201) {
-            router.push({ name: "Profile" });
-        } else {
-            errorMessage.value = response.message || "Registration failed. Please try again.";
-        }
-    } catch (error) {
-        errorMessage.value = error.message || "Registration failed. Please try again.";
-    }
-};
+const {
+  selected,
+  errorMessage,
+  firstName,
+  lastName,
+  email,
+  countryCode,
+  phoneNumber,
+  password,
+  confirmPassword,
+  is_instructor,
+  updateFirstName,
+  updateLastName,
+  updateEmail,
+  updateCountryCode,
+  updatePhoneNumber,
+  updatePassword,
+  updateConfirmPassword,
+  signup
+} = useSignup();
 </script>
 
 <template>

@@ -5,6 +5,9 @@ from models import db, Course, Material, Enrollment, User
 import os
 from werkzeug.utils import secure_filename
 
+THUMBNAIL_FOLDER = "uploads/thumbnails"
+ALLOWED_EXTENSIONS = {"jpg", "jpeg", "png"}
+
 class CourseResource(Resource):
     def get(self):
         try:
@@ -57,9 +60,11 @@ class InstructorCoursesResource(Resource):
                     })
                 
                 course_data.append({
-                    "course_id": course.id,
-                    "course_name": course.name,
-                    "total_duration": total_course_duration,
+                    "id": course.id,
+                    "name": course.name,
+                    "description": course.description,
+                    "thumbnail_path": course.thumbnail_path,
+                    "duration": total_course_duration,
                     "weeks": weeks_data
                 })
             
@@ -83,22 +88,36 @@ class CreateCourseResource(Resource):
             if existing_course:
                 return {'error': 'Course already exists'}, 400
             
-            file = request.files.get('thumbnail')
-            thumbnail_path = None
-            if file:
-                filename = secure_filename(file.filename)
-                thumbnail_path = os.path.join('uploads/materials', filename)
-                os.makedirs(os.path.dirname(thumbnail_path), exist_ok=True)
-                file.save(thumbnail_path)
-            
             new_course = Course(
                 name=data['name'],
                 description=data['description'],
-                creator_user_id=current_user.id,
-                thumbnail_path=thumbnail_path
+                creator_user_id=current_user.id
             )
             
             db.session.add(new_course)
+            db.session.flush()
+            
+            file = request.files.get('thumbnail')
+            if file:
+                filename = secure_filename(file.filename)
+                file_ext = filename.rsplit(".", 1)[-1].lower()
+                if file_ext not in ALLOWED_EXTENSIONS:
+                    return {'error': 'File type not allowed'}, 400
+                
+                if not os.path.exists(THUMBNAIL_FOLDER):
+                    os.makedirs(THUMBNAIL_FOLDER)
+                
+                image_filename = secure_filename(f"{new_course.id}.{file_ext}")
+                image_path = os.path.join(THUMBNAIL_FOLDER, image_filename)
+                file.save(image_path)
+                new_course.thumbnail_path = f"/{THUMBNAIL_FOLDER}/{image_filename}"
+
+
+                # filename = secure_filename(file.filename)
+                # thumbnail_path = os.path.join('uploads/materials', filename)
+                # os.makedirs(os.path.dirname(thumbnail_path), exist_ok=True)
+                # file.save(thumbnail_path)
+                        
             db.session.commit()
             
             course_data = {

@@ -6,12 +6,16 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "start": "concurrently -n FRONTEND,SERVER -c blue,green \"npm run dev:vue\" \"npm run serve:flask\"",
+    "dev:vue": "npm run dev",
+    "serve:flask": "cd server && call myenv\\Scripts\\activate && python app.py"
   },
   "dependencies": {
     "@material/web": "^2.2.0",
     "@tailwindcss/vite": "^4.0.1",
     "axios": "^1.7.9",
+    "concurrently": "^9.1.2",
     "tailwindcss": "^4.0.1",
     "vue": "^3.5.13",
     "vue-router": "^4.5.0",

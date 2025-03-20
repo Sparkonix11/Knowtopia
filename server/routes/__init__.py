@@ -7,7 +7,7 @@ from .question import QuestionCreateResource, QuestionListResource, QuestionDele
 from .review import ReviewResource, ReviewDeleteResource
 from .user import UserProfileResource, UserStudentListResource, DeleteUserResource
 from .week import WeekCreateResource, WeekDeletionResource
-from .ai import AskResource, QuestionHintResource
+from .ai import AskResource, QuestionHintResource, SummarizeResource
 
 def init_routes(app):
     api = Api(app, prefix='/api/v1')
@@ -56,3 +56,4 @@ def init_routes(app):
     # AI Routes
     api.add_resource(AskResource, '/ask')
     api.add_resource(QuestionHintResource, '/question_hint')
+    api.add_resource(SummarizeResource, '/summarize')
