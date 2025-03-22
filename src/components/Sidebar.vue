@@ -46,6 +46,13 @@ const user = computed(() => store.getters["user/currentUser"]);
             <span>Enroll Students</span>
         </div>
         </router-link>
+        
+        <router-link v-if="user?.is_instructor" :to="{ name: 'CreateAssignment' }">
+        <div :class="['h-14 rounded-[100px] flex items-center gap-2 px-4', route.name === 'CreateAssignment'?'bg-(--md-sys-color-secondary-container)': 'hover:bg-(--md-sys-color-on-surface2)']">
+            <md-icon>assignment_add</md-icon>
+            <span>Create Assignment</span>
+        </div>
+        </router-link>
         <!-- <md-divider></md-divider>
         <div class="h-14 w-full flex items-center px-5 ">
             <span class="text-(length:--md-sys-typescale-title-medium-font)">Saved</span>
