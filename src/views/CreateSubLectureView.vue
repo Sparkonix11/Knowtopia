@@ -1,33 +1,88 @@
 <script setup>
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import { useCreateMaterial } from "../handlers/useCreateSubLecture";
 
-const { createMaterial, error } = useCreateMaterial();
+const { createMaterial, error: apiError, isLoading } = useCreateMaterial();
 
 const name = ref("");
 const duration = ref("");
-const selectedFile = ref(null); // Define selectedFile
+const selectedFile = ref(null);
+const fileInputRef = ref(null);
+const previewUrl = ref(null);
+const fileType = ref("");
+const formErrors = ref({
+    name: "",
+    duration: "",
+    file: ""
+});
+
+// Form validation
+const isFormValid = computed(() => {
+    return name.value.trim() !== "" && 
+           duration.value.trim() !== "" && 
+           selectedFile.value && 
+           !formErrors.value.name && 
+           !formErrors.value.duration && 
+           !formErrors.value.file;
+});
+
+const validateName = () => {
+    if (!name.value.trim()) {
+        formErrors.value.name = "Lecture title is required";
+        return false;
+    } else if (name.value.length < 3) {
+        formErrors.value.name = "Title must be at least 3 characters";
+        return false;
+    } else {
+        formErrors.value.name = "";
+        return true;
+    }
+};
+
+const validateDuration = () => {
+    if (!duration.value.trim()) {
+        formErrors.value.duration = "Duration is required";
+        return false;
+    } else if (isNaN(duration.value) || parseInt(duration.value) <= 0) {
+        formErrors.value.duration = "Duration must be a positive number";
+        return false;
+    } else {
+        formErrors.value.duration = "";
+        return true;
+    }
+};
 
 const updateName = (event) => {
     name.value = event.target.value;
-};
-const updateDuration = (event) => {
-    duration.value = event.target.value;
+    validateName();
 };
 
-const fileInputRef = ref(null);
-const previewUrl = ref(null);
+const updateDuration = (event) => {
+    duration.value = event.target.value;
+    validateDuration();
+};
 
 const selectFile = (event) => {
     const file = event.target.files[0];
 
     if (file) {
-        selectedFile.value = file; // Store the file in the reactive variable
-
-        // Create a URL for the preview if the file is an image
+        selectedFile.value = file;
+        fileType.value = file.type;
+        
+        // Create a preview URL based on file type
         if (file.type.startsWith("image/")) {
             previewUrl.value = URL.createObjectURL(file);
+        } else if (file.type.startsWith("video/")) {
+            previewUrl.value = URL.createObjectURL(file);
+        } else if (file.type === "application/pdf") {
+            // For PDF files, we'll just show an icon
+            previewUrl.value = null;
+        } else {
+            // For other file types
+            previewUrl.value = null;
         }
+        
+        formErrors.value.file = "";
     }
 };
 
@@ -36,22 +91,27 @@ const openFileSelector = () => {
     fileInputRef.value.click();
 };
 
-const emit = defineEmits(["toggleCreateSubLecture", "toggleCreateLecture"]);
+const emit = defineEmits(["toggleCreateSubLecture"]);
 
 const toggleCreateSubLecture = () => {
     emit("toggleCreateSubLecture");
-    emit("toggleCreateLecture");
 };
 
 const handleCreateMaterial = async () => {
+    // Validate all fields before submission
+    const isNameValid = validateName();
+    const isDurationValid = validateDuration();
+    
     if (!selectedFile.value) {
-        console.error("No file selected.");
+        formErrors.value.file = "Please upload a lecture content file";
         return;
     }
 
-    const response = await createMaterial(name.value, duration.value, selectedFile.value);
-    if (response) {
-        toggleCreateSubLecture();
+    if (isNameValid && isDurationValid) {
+        const response = await createMaterial(name.value, duration.value, selectedFile.value);
+        if (response) {
+            toggleCreateSubLecture();
+        }
     }
 };
 </script>
@@ -67,32 +127,88 @@ const handleCreateMaterial = async () => {
             </div>
             
             <div class="flex flex-col gap-10 h-full justify-center items-center">
-                <div class="flex flex-col items-start gap-2">
+                <h2 class="text-2xl font-bold mb-4">Add Lecture Content</h2>
+                
+                <!-- Error message -->
+                <div v-if="apiError" class="bg-(--md-sys-color-error-container) text-(--md-sys-color-on-error-container) p-4 rounded-lg w-200 mb-4">
+                    <div class="flex items-center gap-2">
+                        <md-icon>error</md-icon>
+                        <span>{{ apiError }}</span>
+                    </div>
+                </div>
+                
+                <div class="flex flex-col items-start gap-2 w-200">
                     <label class="text-gray-700 font-medium">Lecture Content</label>
-                    <div @click="openFileSelector" class="relative w-200 h-75 bg-(--md-sys-color-primary-container) border border-(--md-sys-color-outline) rounded-[16px] flex items-center justify-center cursor-pointer hover:bg-(--md-sys-color-secondary-container) transition-all">
+                    <div @click="openFileSelector" class="relative w-full h-75 bg-(--md-sys-color-primary-container) border border-(--md-sys-color-outline) rounded-[16px] flex items-center justify-center cursor-pointer hover:bg-(--md-sys-color-secondary-container) transition-all">
                         <!-- Image Preview -->
                         <img 
-                            v-if="previewUrl" 
+                            v-if="previewUrl && fileType.startsWith('image/')" 
                             :src="previewUrl" 
                             alt="File preview" 
                             class="absolute inset-0 w-full h-full object-contain rounded-[16px]"
                         />
+                        
+                        <!-- Video Preview -->
+                        <video 
+                            v-if="previewUrl && fileType.startsWith('video/')" 
+                            :src="previewUrl" 
+                            controls
+                            class="absolute inset-0 w-full h-full object-contain rounded-[16px]"
+                        ></video>
+                        
+                        <!-- PDF or other file type indicator -->
+                        <div v-if="selectedFile && !previewUrl" class="flex flex-col items-center text-(--md-sys-color-on-primary-container)">
+                            <md-icon class="text-4xl">{{ fileType === 'application/pdf' ? 'picture_as_pdf' : 'insert_drive_file' }}</md-icon>
+                            <span class="mt-2">{{ selectedFile.name }}</span>
+                            <span class="text-sm">{{ (selectedFile.size / 1024 / 1024).toFixed(2) }} MB</span>
+                        </div>
 
-                        <!-- Upload Icon & Text (Hidden when image is uploaded) -->
-                        <div v-if="!previewUrl" class="flex flex-col items-center text-(--md-sys-color-on-primary-container)">
+                        <!-- Upload Icon & Text (Hidden when file is uploaded) -->
+                        <div v-if="!selectedFile" class="flex flex-col items-center text-(--md-sys-color-on-primary-container)">
                             <md-icon>cloud_upload</md-icon>
                             <span>Upload Content</span>
+                            <span class="text-sm mt-1">(PDF, Video, Image, etc.)</span>
                         </div>
                     </div>
                     <input ref="fileInputRef" type="file" class="hidden" @change="selectFile" />
+                    <p v-if="formErrors.file" class="text-red-500 text-sm mt-1 ml-2">{{ formErrors.file }}</p>
                 </div>
-                <md-outlined-text-field class="w-200" label="Title" placeholder="Enter Lecture Title" @change="updateName" :value="name"></md-outlined-text-field>
-                <md-outlined-text-field class="w-200" label="Duration" placeholder="Enter Lecture Duration" @change="updateDuration" :value="duration"></md-outlined-text-field>
-                <!-- <md-outlined-text-field class="w-200" type="textarea" label="Description" placeholder="Enter Lecture Description" rows="3"></md-outlined-text-field> -->
+                
+                <div class="w-200">
+                    <md-outlined-text-field 
+                        class="w-full" 
+                        label="Title" 
+                        placeholder="Enter Lecture Title" 
+                        @input="updateName" 
+                        :value="name"
+                        :error="!!formErrors.name"
+                    ></md-outlined-text-field>
+                    <p v-if="formErrors.name" class="text-red-500 text-sm mt-1 ml-2">{{ formErrors.name }}</p>
+                </div>
+                
+                <div class="w-200">
+                    <md-outlined-text-field 
+                        class="w-full" 
+                        label="Duration (minutes)" 
+                        placeholder="Enter Lecture Duration" 
+                        type="number"
+                        min="1"
+                        @input="updateDuration" 
+                        :value="duration"
+                        :error="!!formErrors.duration"
+                    ></md-outlined-text-field>
+                    <p v-if="formErrors.duration" class="text-red-500 text-sm mt-1 ml-2">{{ formErrors.duration }}</p>
+                </div>
 
-
-
-                <div class="flex justify-end w-200 mt-4"><md-filled-button class="w-30 h-12" @click="handleCreateMaterial"> Save </md-filled-button></div>
+                <div class="flex justify-end w-200 mt-4">
+                    <md-filled-button 
+                        class="w-30 h-12" 
+                        @click="handleCreateMaterial"
+                        :disabled="isLoading || !isFormValid"
+                    > 
+                        {{ isLoading ? "Saving..." : "Save" }}
+                    </md-filled-button>
+                </div>
             </div>
         </div>
     </div>
