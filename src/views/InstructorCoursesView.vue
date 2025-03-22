@@ -35,7 +35,7 @@ const {
                 <md-filled-button class="mt-4" @click="fetchInstructorCourses">Retry</md-filled-button>
             </div>
             
-            <div v-else class="w-[90%] h-138 p-6 bg-(--md-sys-color-secondary-container) rounded-[12px] flex flex-col gap-3">
+            <div v-else class="w-[90%] p-6 bg-(--md-sys-color-secondary-container) rounded-[12px] flex flex-col gap-3 max-h-[70vh] overflow-y-auto">
                 <div v-if="instructorCourses && instructorCourses.length > 0" class="flex w-auto h-15 rounded-[12px] justify-between px-15 items-center bg-(--md-sys-color-surface)">
                     <div class="flex-1 text-center">
                         <span>Name</span>
