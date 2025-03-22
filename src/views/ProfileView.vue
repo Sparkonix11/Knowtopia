@@ -1,13 +1,31 @@
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, reactive } from 'vue';
 import { useStore } from 'vuex';
-import NavbarMain from '@/components/NavbarMain.vue';
-import Sidebar from '@/components/Sidebar.vue';
+import BaseLayout from '@/components/BaseLayout.vue';
 import avatarPlaceholder from '@/assets/avatar.png';
 
 const store = useStore();
 const user = computed(() => store.getters["user/currentUser"]).value;
 const pfp = '../../server'+user.image;
+
+// Feedback state
+const feedback = reactive({
+    show: false,
+    message: '',
+    type: 'success' // 'success' or 'error'
+});
+
+// Function to show feedback message
+const showFeedback = (message, type = 'success') => {
+    feedback.message = message;
+    feedback.type = type;
+    feedback.show = true;
+    
+    // Auto-hide after 3 seconds
+    setTimeout(() => {
+        feedback.show = false;
+    }, 3000);
+};
 
 const profileImage = ref(pfp || avatarPlaceholder);
 const firstName = ref(user.fname || '');
@@ -60,28 +78,34 @@ const saveProfile = async () => {
         formData.append('image', fileInput.value.files[0]);
     }
 
-    // for (let [key, value] of formData.entries()) {
-    //     console.log(`${key}:`, value);
-    // }
     try {
         const response = await store.dispatch("user/updateUserProfile", formData);
         
         if (response.status === 200) {
-            console.log("Update Suceessful");
+            showFeedback("Profile updated successfully", "success");
+            // Clear password fields after successful update
+            currentPassword.value = '';
+            newPassword.value = '';
         } else {
-            console.log(response.message || "Update failed. Please try again.");
+            showFeedback(response.message || "Update failed. Please try again.", "error");
         }
     } catch (error) {
-        console.log(error.message || "Update failed. Please try again.");
+        showFeedback(error.message || "Update failed. Please try again.", "error");
     }
 };
 </script>
 
 <template>
-    <NavbarMain />
-    <div class="flex">
-        <Sidebar />
-        <div class="flex-1 flex flex-col items-center my-10 gap-6">
+    <BaseLayout>
+            <!-- Feedback notification -->
+            <div v-if="feedback.show" 
+                 class="fixed top-5 right-5 z-50 p-4 rounded-lg shadow-lg transition-all duration-300 max-w-md"
+                 :class="feedback.type === 'success' ? 'bg-(--md-sys-color-primary-container) text-(--md-sys-color-on-primary-container)' : 'bg-(--md-sys-color-error-container) text-(--md-sys-color-on-error-container)'">
+                <div class="flex items-center gap-2">
+                    <md-icon>{{ feedback.type === 'success' ? 'check_circle' : 'error' }}</md-icon>
+                    <span>{{ feedback.message }}</span>
+                </div>
+            </div>
             <div class="w-[80%] h-fit px-12 py-18 bg-(--md-sys-color-surface) border border-(--md-sys-color-outline-variant) rounded-[12px] m-auto flex flex-col gap-6 justify-center items-center">
                 <div class="flex gap-2">
                     <img :src="profileImage" alt="Profile Picture" class="w-30 h-30 rounded-full border border-(--md-sys-color-outline-variant)">
@@ -146,9 +170,21 @@ const saveProfile = async () => {
             </div>
 
             <div class="flex justify-end w-[80%] gap-4">
-                <md-outlined-button class="w-35 h-11">Cancel</md-outlined-button>
+                <md-outlined-button class="w-35 h-11" @click="() => {
+                    // Reset form to original user data
+                    profileImage.value = pfp || avatarPlaceholder;
+                    firstName.value = user.fname || '';
+                    lastName.value = user.lname || '';
+                    dateOfBirth.value = user.dob || '';
+                    gender.value = user.gender || '';
+                    phoneCode.value = user.phone ? user.phone.slice(0, 3) : '+91';
+                    phoneNumber.value = user.phone ? user.phone.slice(3) : '';
+                    about.value = user.about || '';
+                    currentPassword.value = '';
+                    newPassword.value = '';
+                    showFeedback('Form reset to original values');
+                }">Cancel</md-outlined-button>
                 <md-filled-button class="w-35 h-11" @click="saveProfile">Save</md-filled-button>
             </div>
-        </div>
-    </div>
+    </BaseLayout>
 </template>

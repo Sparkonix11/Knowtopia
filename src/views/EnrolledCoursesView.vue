@@ -1,14 +1,10 @@
 <script setup>
-import NavbarMain from '@/components/NavbarMain.vue';
-import Sidebar from '@/components/Sidebar.vue';
+import BaseLayout from '@/components/BaseLayout.vue';
 import EnrolledCourseCard from '@/components/EnrolledCourseCard.vue';
 </script>
 
 <template>
-    <NavbarMain />
-    <div class="flex">
-        <Sidebar />
-        <div class="flex-1 flex flex-col items-center my-10 ">
+    <BaseLayout contentClass="my-10">
             <div class="w-[90%] px-6 py-3">
                 <span class=" text-4xl">Enrolled Courses</span>
             </div>
@@ -29,6 +25,5 @@ import EnrolledCourseCard from '@/components/EnrolledCourseCard.vue';
                 <EnrolledCourseCard :courseName="'Name 3'" :description="'Description 3'" :time="'09Hr 14Mins'" :progress="0.5"/>
                 <EnrolledCourseCard :courseName="'Name 4'" :description="'Description 4'" :time="'14Hr 32Mins'" :progress="0.8"/>
             </div>
-        </div>
-    </div>
+    </BaseLayout>
   </template>

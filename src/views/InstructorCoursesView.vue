@@ -1,6 +1,5 @@
 <script setup>
-import NavbarMain from '@/components/NavbarMain.vue';
-import Sidebar from '@/components/Sidebar.vue';
+import BaseLayout from '@/components/BaseLayout.vue';
 import EnrolledCourseCard from '@/components/EnrolledCourseCard.vue';
 import CreateCourseView from './CreateCourseView.vue';
 import CreateLecturesView from './CreateLecturesView.vue';
@@ -21,10 +20,7 @@ const {
 
 
 <template>
-    <NavbarMain />
-    <div class="flex">
-        <Sidebar />
-        <div class="flex-1 flex flex-col items-center my-10 ">
+    <BaseLayout contentClass="my-10">
             <div class="w-[90%] px-6 py-3">
                 <span class="text-4xl">My Courses</span>
             </div>
@@ -74,8 +70,7 @@ const {
             <div class="flex-1 flex justify-end w-[90%] mt-5">
                 <md-filled-button class="w-30 h-15" @click="toggleCreateCourse">Add</md-filled-button>
             </div>
-        </div>
-    </div>
+    </BaseLayout>
     
     <CreateCourseView 
         v-if="showCreateCourse" 
