@@ -31,8 +31,9 @@ export function isValidEmail(email) {
  */
 export function isValidPhone(phone) {
   // Basic phone validation - can be customized based on requirements
-  const phoneRegex = /^\d{10,15}$/;
-  return phoneRegex.test(phone.replace(/[\s()-]/g, ''));
+  const phoneRegex = /^\+?\d{10,15}$/;
+  return phoneRegex.test(phone.replace(/[\s()\-]/g, ''));
+  
 }
 
 /**
