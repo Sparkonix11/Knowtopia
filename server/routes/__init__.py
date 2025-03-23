@@ -1,7 +1,7 @@
 from flask_restful import Api
 from .assignment import AssignmentResource, CreateAssignmentResource, DeleteAssignmentResource
 from .auth import SignupResource, LoginResource, LogoutResource
-from .course import CourseResource, CreateCourseResource, InstructorCoursesResource, DeleteCourseResource, EnrolledCoursesResource, EnrollStudentResource
+from .course import CourseResource, CreateCourseResource, InstructorCoursesResource, DeleteCourseResource, EnrolledCoursesResource, EnrollStudentResource, SingleCourseResource
 from .material import MaterialCreateResource, MaterialDeleteResource
 from .question import QuestionCreateResource, QuestionListResource, QuestionDeleteResource
 from .review import ReviewResource, ReviewDeleteResource
@@ -29,6 +29,7 @@ def init_routes(app):
     api.add_resource(DeleteCourseResource, '/course/delete/<int:course_id>')
     api.add_resource(EnrolledCoursesResource, '/course/enrolled')
     api.add_resource(EnrollStudentResource, '/course/enroll/<int:course_id>/<int:student_id>')
+    api.add_resource(SingleCourseResource, '/course/<int:course_id>')
 
     # Material Routes
     api.add_resource(MaterialCreateResource, '/material/create/<int:week_id>')

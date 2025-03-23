@@ -1,7 +1,7 @@
 import { apiConnector } from "../apiConnector";
 import { courseEndpoints } from "../apis";
 
-const { COURSE, CREATE_COURSE, INSTRUCTOR_COURSES, DELETE_COURSE, ENROLLED_COURSES, ENROLL_STUDENT } = courseEndpoints;
+const { COURSE, CREATE_COURSE, INSTRUCTOR_COURSES, DELETE_COURSE, ENROLLED_COURSES, ENROLL_STUDENT, SINGLE_COURSE } = courseEndpoints;
 
 export async function createCourseAPI(formData) {
     try {
@@ -51,6 +51,15 @@ export async function getEnrolledCoursesAPI() {
 export async function enrollStudentAPI(courseId, studentId) {
     try {
         const response = await apiConnector('POST', ENROLL_STUDENT(courseId, studentId));
+        return response;
+    } catch (error) {
+        return error.response;
+    }
+}
+
+export async function getSingleCourseAPI(courseId) {
+    try {
+        const response = await apiConnector('GET', SINGLE_COURSE(courseId));
         return response;
     } catch (error) {
         return error.response;

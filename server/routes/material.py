@@ -57,7 +57,7 @@ class MaterialCreateResource(Resource):
             new_material_path = os.path.join(UPLOAD_FOLDER, material_filename)
             file.save(new_material_path)
             new_material.file_path = f"/uploads/materials/{material_filename}"
-            new_material.file_path = material_filename
+            new_material.filename = material_filename
             
             transcript_file_path = None
 

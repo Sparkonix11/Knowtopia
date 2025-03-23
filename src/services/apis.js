@@ -20,6 +20,7 @@ export const courseEndpoints = {
     DELETE_COURSE: (courseId) => `${API_URL}/course/delete/${courseId}`,
     ENROLLED_COURSES: `${API_URL}/course/enrolled`,
     ENROLL_STUDENT: (courseId, studentId) => `${API_URL}/course/enroll/${courseId}/${studentId}`,
+    SINGLE_COURSE: (courseId) => `${API_URL}/course/${courseId}`,
 };
 
 export const materialEndpoints = {

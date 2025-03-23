@@ -10,7 +10,8 @@ const notifOpen = ref(false);
 const store = useStore();
 const user = computed(() => store.getters["user/currentUser"]);
 
-const avatar = '../../server'+user.value.image;
+// Use the provided image or fallback to a default avatar
+const avatar = user.value.image ? `../../server${user.value.image}` : '';
 
 const toggleMenu = () => {
     menuOpen.value = !menuOpen.value;
