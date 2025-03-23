@@ -6,7 +6,7 @@ const props = defineProps({
     time: String,
     progress: Number
 })
-const image = `../../server${props.thumbnail}`;
+const image = props.thumbnail ? `../../server${props.thumbnail}` : '../../src/assets/resource_placeholder.png';
 </script>
 <template>
     <router-link :to="{'name': 'Course'}">
