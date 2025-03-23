@@ -66,6 +66,17 @@ class SingleCourseResource(Resource):
                         "type": "video"  # Default type, can be updated based on actual data
                     })
                 
+                # Get assignments for this week
+                from models import Assignment
+                assignments = Assignment.query.filter_by(week_id=week.id).all()
+                for assignment in assignments:
+                    materials_data.append({
+                        "material_id": assignment.id,
+                        "material_name": assignment.name,
+                        "description": assignment.description,
+                        "isAssignment": True
+                    })
+                
                 total_course_duration += total_week_duration
                 weeks_data.append({
                     "id": week.id,
@@ -113,6 +124,17 @@ class InstructorCoursesResource(Resource):
                             "material_name": material.name,
                             "duration": material.duration,
                             "file_path": material.filename
+                        })
+                    
+                    # Get assignments for this week
+                    from models import Assignment
+                    assignments = Assignment.query.filter_by(week_id=week.id).all()
+                    for assignment in assignments:
+                        materials_data.append({
+                            "material_id": assignment.id,
+                            "material_name": assignment.name,
+                            "description": assignment.description,
+                            "isAssignment": True
                         })
                     
                     total_course_duration += total_week_duration

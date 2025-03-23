@@ -10,7 +10,9 @@ from .material import Material
 from .week import Week
 from .course import Course
 from .enrollment import Enrollment
+from.score import Score
 
 def init_db(app):
-    with app.app_context():
-        db.create_all()
+    # Flask-Migrate will handle database creation and migrations
+    # This function is kept for backward compatibility
+    pass

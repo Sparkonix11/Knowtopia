@@ -1,0 +1,83 @@
+# Flask-Migrate Database Migrations
+
+This directory contains database migrations for the project using Flask-Migrate. Flask-Migrate is an extension that handles SQLAlchemy database migrations for Flask applications using Alembic.
+
+## Migration Commands
+
+### Initialize Migrations
+
+If you're setting up migrations for the first time:
+
+```bash
+flask db init
+```
+
+This creates the migrations directory structure.
+
+### Create a Migration
+
+After making changes to your models, create a migration:
+
+```bash
+flask db migrate -m "Description of changes"
+```
+
+This generates a migration script based on the changes detected in your models.
+
+### Apply Migrations
+
+To apply migrations to the database:
+
+```bash
+flask db upgrade
+```
+
+This updates your database to the latest version.
+
+### Downgrade Migrations
+
+To revert to a previous migration:
+
+```bash
+flask db downgrade
+```
+
+### View Migration History
+
+To see the migration history:
+
+```bash
+flask db history
+```
+
+### Show Current Migration
+
+To see the current migration version:
+
+```bash
+flask db current
+```
+
+## Project Configuration
+
+In this project, Flask-Migrate is configured in `factory.py` with:
+
+```python
+from flask_migrate import Migrate
+# ...
+migrate = Migrate(app, db)
+```
+
+The database connection is configured in `config.py` with:
+
+```python
+SQLALCHEMY_DATABASE_URI = 'sqlite:///app.db'
+```
+
+## Best Practices
+
+1. Always create a backup before applying migrations to production
+2. Review migration scripts before applying them
+3. Test migrations in a development environment first
+4. Use descriptive messages when creating migrations
+5. Keep migrations small and focused on specific changes

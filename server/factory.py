@@ -1,6 +1,7 @@
 from flask import Flask
 from flask_login import LoginManager
 from flask_cors import CORS
+from flask_migrate import Migrate
 from models import db, init_db, User
 from routes import init_routes
 
@@ -15,6 +16,7 @@ def create_app():
     CORS(app, supports_credentials=True)
     app.config.from_pyfile('config.py')
     db.init_app(app)
+    migrate = Migrate(app, db)
     init_db(app)
     login_manager.init_app(app)
 
