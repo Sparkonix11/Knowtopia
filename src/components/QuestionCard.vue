@@ -3,7 +3,13 @@ defineProps({
     question: String,
     options: Array,
     type: String
-})
+});
+
+const emit = defineEmits(['select-option']);
+
+const handleOptionSelect = (index) => {
+    emit('select-option', index);
+};
 </script>
 
 <template>
@@ -18,9 +24,14 @@ defineProps({
         </div>
 
         <div v-if="type == 'MCQ'" class="flex flex-col gap-5 mt-6 ">
-            <div v-for="option in options" class="flex text-xl gap-4 items-center">
-                <md-radio :id="option" :name="question" :value="option"></md-radio>
-                <label :for="option">{{option}}</label>
+            <div v-for="(option, index) in options" :key="index" class="flex text-xl gap-4 items-center">
+                <md-radio 
+                    :id="`${question}-${index}`" 
+                    :name="question" 
+                    :value="index" 
+                    @change="handleOptionSelect(index)"
+                ></md-radio>
+                <label :for="`${question}-${index}`">{{option}}</label>
             </div>
         </div>
 

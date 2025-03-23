@@ -4,13 +4,14 @@ import SidebarCourse from '@/components/SidebarCourse.vue';
 import placeholder from '@/assets/placeholder.mp4';
 import WriteReview from '@/components/WriteReview.vue';
 import Summaries from '@/components/Summaries.vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { useStore } from 'vuex';
 
 import { ref, onMounted, computed } from "vue";
 import { getInstructorCoursesAPI, getEnrolledCoursesAPI, getSingleCourseAPI } from '@/services/operations/courseAPI';
 
 const route = useRoute();
+const router = useRouter();
 const store = useStore();
 
 const showWriteReview = ref(false);
@@ -59,10 +60,10 @@ onMounted(async () => {
               subLectures: week.materials ? week.materials.map(material => ({
                 id: material.material_id,
                 name: material.material_name,
-                type: material.type || 'video',
+                type: material.isAssignment ? 'assignment' : (material.type || 'video'),
                 url: material.file_path ? `../../server${material.file_path}` : null,
                 duration: material.duration,
-                isAssignment: material.type === 'assignment'
+                isAssignment: material.isAssignment || material.type === 'assignment'
               })) : []
             }));
             
@@ -89,7 +90,20 @@ onMounted(async () => {
 });
 
 const selectMaterial = (material) => {
-  currentMaterial.value = material;
+  console.log('Material selected:', material);
+  // Check if the selected material is an assignment
+  if (material.isAssignment) {
+    console.log('Assignment detected, navigating to Assignment view with ID:', material.id);
+    // Navigate to the assignment view with the assignment ID
+    router.push({
+      name: 'Assignment',
+      query: { id: material.id }
+    });
+    console.log('Router push executed');
+  } else {
+    // For non-assignment materials, just update the current material
+    currentMaterial.value = material;
+  }
 };
 
 const toggleWriteReview = () => {
@@ -159,7 +173,13 @@ const getFileType = (url) => {
                 
                 <!-- Other content types -->
                 <div v-else class="w-[80%] rounded-[12px] border border-(--md-sys-color-outline) flex items-center justify-center h-[50vh]">
-                    <p v-if="currentMaterial.isAssignment" class="text-xl">This is an assignment. Please click to view.</p>
+                    <div v-if="currentMaterial.isAssignment" class="flex flex-col items-center gap-4">
+                        <p class="text-xl">This is an assignment</p>
+                        <md-filled-button @click="selectMaterial(currentMaterial)">
+                            <md-icon class="mr-2">assignment</md-icon>
+                            Open Assignment
+                        </md-filled-button>
+                    </div>
                     <p v-else class="text-xl">Content type not supported for preview</p>
                 </div>
                 

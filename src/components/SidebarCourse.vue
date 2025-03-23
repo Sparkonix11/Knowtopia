@@ -59,12 +59,20 @@ const selectMaterial = (material) => {
                         v-else
                         v-for="subLecture in lecture.subLectures" 
                         :key="subLecture.id || subLecture"
-                        class="rounded-[100px] px-6 border-b border-(--md-sys-color-outline-variant) hover:bg-(--md-sys-color-on-surface2)"
+                        :class="[
+                            'rounded-[100px] px-6 border-b border-(--md-sys-color-outline-variant) hover:bg-(--md-sys-color-on-surface2)',
+                            {'bg-(--md-sys-color-tertiary-container) text-(--md-sys-color-on-tertiary-container)': typeof subLecture === 'object' && subLecture.isAssignment}
+                        ]"
                         @click="selectMaterial(subLecture)"
                     >
                         <div class="flex items-center gap-3 cursor-pointer">
-                            <md-checkbox touch-target="wrapper"></md-checkbox>
+                            <!-- Show different icon based on material type -->
+                            <div v-if="typeof subLecture === 'object' && subLecture.isAssignment">
+                                <md-icon class="text-(--md-sys-color-on-tertiary-container)">assignment</md-icon>
+                            </div>
+                            <md-checkbox v-else touch-target="wrapper"></md-checkbox>
                             <span>{{ typeof subLecture === 'string' ? subLecture : subLecture.name }}</span>
+                            <span v-if="typeof subLecture === 'object' && subLecture.isAssignment" class="text-xs ml-auto font-medium">Assignment</span>
                         </div>
                     </md-list-item>
                 </div>
