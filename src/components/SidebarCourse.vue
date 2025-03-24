@@ -26,7 +26,7 @@ const selectMaterial = (material) => {
 };
 </script>
 <template>
-    <div class="w-[20%] h-[calc(100vh-5rem)] px-3 rounded-[12px] bg-(--md-sys-color-surface-container-low) overflow-y-auto">
+    <div class="w-[20%] h-[calc(100vh-5rem)] px-3 rounded-[12px] bg-(--md-sys-color-surface-container-low) overflow-y-auto fixed left-0 z-10">
         <span class="px-4 py-8 block text-xl">{{ courseName }}</span>
 
         <!-- Empty state -->

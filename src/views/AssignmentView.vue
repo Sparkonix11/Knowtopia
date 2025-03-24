@@ -102,6 +102,7 @@ const handleSubmitAssignment = async () => {
                         :question="question.question" 
                         :options="question.options" 
                         :type="question.type" 
+                        :questionId="question.id"
                         @select-option="(index) => selectAnswer(question.id, index + 1)" 
                     />
                 </div>

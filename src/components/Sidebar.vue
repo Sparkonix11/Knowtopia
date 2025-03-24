@@ -9,7 +9,7 @@ const user = computed(() => store.getters["user/currentUser"]);
 </script>
 
 <template>
-    <div class="w-90 h-[calc(100vh-5rem)] bg-(--md-sys-color-surface-container-low) px-3 left-0">
+    <div class="w-90 h-[calc(100vh-5rem)] bg-(--md-sys-color-surface-container-low) px-3 left-0 fixed z-10 top-20">
         <div class="h-14 w-full flex items-center px-5">
             <span class="text-(length:--md-sys-typescale-title-medium-font)">  {{ (user?.is_instructor) ? 'Instructor Portal' : 'Student Portal' }}
             </span>

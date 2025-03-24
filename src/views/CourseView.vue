@@ -176,16 +176,17 @@ const getFileType = (url) => {
 </script>
 
 <template>
-    <NavBarMain />
-    <div class="flex">
+    <NavBarMain class="fixed top-0 left-0 right-0 z-20" />
+    <div class="flex pt-20">
         <!-- Sidebar with real lecture data -->
         <SidebarCourse 
             :lectures="lectureData.lectures" 
             @select-material="selectMaterial"
+            class="top-20"
         />
         
         <!-- Main content area -->
-        <div class="flex-1 flex flex-col items-center my-10 gap-6 w-full px-6">
+        <div class="flex-1 flex flex-col my-10 gap-6 w-full px-6 ml-[20%]">
             <!-- Loading state -->
             <div v-if="isLoading" class="flex justify-center items-center h-[50vh] w-full">
                 <md-circular-progress indeterminate></md-circular-progress>
@@ -265,6 +266,7 @@ const getFileType = (url) => {
                                     :question="question.question" 
                                     :options="question.options" 
                                     :type="question.type"
+                                    :questionId="question.id"
                                     @select-option="(optionIndex) => selectAnswer(question.id, optionIndex)"
                                 />
                             </div>

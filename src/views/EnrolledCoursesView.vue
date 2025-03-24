@@ -27,20 +27,20 @@ onMounted(async () => {
 
 <template>
     <BaseLayout contentClass="my-10">
-            <div class="w-[90%] px-6 py-3">
+            <div class="w-full px-6 py-3">
                 <span class=" text-4xl">Enrolled Courses</span>
             </div>
             
             <!-- Loading and error states -->
-            <div v-if="isLoading" class="w-[90%] p-6 text-center">
+            <div v-if="isLoading" class="w-full p-6 text-center">
                 Loading courses...
             </div>
             
-            <div v-else-if="error" class="w-[90%] p-6 text-center text-red-500">
+            <div v-else-if="error" class="w-full p-6 text-center text-red-500">
                 {{ error }}
             </div>
             
-            <div v-else class="w-[90%] h-138 p-6 bg-(--md-sys-color-secondary-container) rounded-[12px] flex flex-col gap-3">
+            <div v-else class="w-full h-138 p-6 bg-(--md-sys-color-secondary-container) rounded-[12px] flex flex-col gap-3">
                 <!-- Empty state -->
                 <div v-if="!courses || courses.length === 0" class="flex flex-col items-center justify-center py-10 text-center">
                     <p class="text-xl mb-2">No enrolled courses found</p>

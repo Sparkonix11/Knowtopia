@@ -43,7 +43,7 @@ const toggleNotif = () => {
 </script>
 
 <template>
-    <div class="navbar flex w-full items-center justify-between px-30 h-20 bg-(--md-sys-color-surface-container)">
+    <div class="navbar flex w-full items-center justify-between px-30 h-20 bg-(--md-sys-color-surface-container) shadow-md">
         <div class="flex-1 flex justify-start items-center pl-20 ">
             <router-link :to="{ name: user?.is_instructor ? 'InstructorDashboard' : 'StudentDashboard' }">
                 <img :src="logo" alt="" class="w-20 h-20 rounded-full cursor-pointer">

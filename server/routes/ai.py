@@ -126,13 +126,22 @@ class AskResource(Resource):
 class QuestionHintResource(Resource):
     def post(self):
         data = request.get_json(force=True)
-        question = data.get("question", "").strip()
-        options = data.get("options", [])
+        question_id = data.get("question_id")
 
-        if not question or not options or not isinstance(options, list):
-            return {"error": "Both 'question' and a list of 'options' are required."}, 400
+        if not question_id:
+            return {"error": "Question ID is required."}, 400
 
         try:
+            # Fetch question from database
+            from models.question import Question
+            question_data = Question.query.get(question_id)
+            
+            if not question_data:
+                return {"error": "Question not found."}, 404
+                
+            question = question_data.description
+            options = [question_data.option1, question_data.option2, question_data.option3, question_data.option4]
+            
             response = client.chat.completions.create(
                 model="gpt-4",
                 messages=[
@@ -146,7 +155,7 @@ class QuestionHintResource(Resource):
             hint = response.choices[0].message.content.strip()
 
         except Exception as e:
-            return {"error": f"OpenAI API error: {str(e)}"}, 500
+            return {"error": f"Error: {str(e)}"}, 500
 
         return jsonify({"question": question, "hint": hint})
 

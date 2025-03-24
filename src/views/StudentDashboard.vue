@@ -6,12 +6,12 @@ import doubtChart from '@/assets/instructor_doubts_chart.png';
 </script>
 
 <template>
-    <BaseLayout>
-            <StatCard title="Assignments Due">
+    <BaseLayout contentClass="my-10 gap-6">
+            <StatCard title="Assignments Due" class="w-full">
                 <span class="text-center">No Pending Assignment</span>
             </StatCard>
 
-            <StatCard title="Statistics">
+            <StatCard title="Statistics" class="w-full">
                 <div class="flex justify-evenly">
                     <img :src="marksChart" alt="" class="w-[40%]">
                     <img :src="doubtChart" alt="" class="w-[40%]">
