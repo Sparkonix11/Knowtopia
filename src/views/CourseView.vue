@@ -11,7 +11,7 @@ import axios from 'axios';
 
 import { ref, onMounted, computed } from "vue";
 import { getInstructorCoursesAPI, getEnrolledCoursesAPI, getSingleCourseAPI } from '@/services/operations/courseAPI';
-import { submitAssignmentAPI } from '@/services/operations/assignmentAPI';
+import { useAssignment } from '@/handlers/useAssignment';
 import { apiConnector } from '@/services/apiConnector';
 import { questionEndpoints } from '@/services/apis';
 
@@ -30,15 +30,21 @@ const lectureData = ref({ lectures: [] });
 const isInstructor = computed(() => store.getters['user/getUser']?.role === 'instructor');
 const currentMaterial = ref(null);
 
-// Assignment related state variables
-const questions = ref([]);
-const selectedAnswers = ref({});
-const isLoadingQuestions = ref(false);
-const questionError = ref(null);
-const isSubmitting = ref(false);
-const submissionError = ref(null);
-const submissionSuccess = ref(false);
-const submissionResult = ref(null);
+// Initialize the assignment handler
+const {
+  questions,
+  selectedAnswers,
+  isLoadingQuestions,
+  isSubmitting,
+  questionError,
+  submissionError,
+  submissionSuccess,
+  submissionResult,
+  fetchAssignmentQuestions,
+  selectAnswer,
+  submitAssignment,
+  resetAssignment
+} = useAssignment();
 
 // Fetch course data on component mount
 onMounted(async () => {
@@ -120,11 +126,7 @@ const selectMaterial = async (material) => {
   currentMaterial.value = material;
   
   // Reset assignment-related state when switching materials
-  questions.value = [];
-  selectedAnswers.value = {};
-  submissionError.value = null;
-  submissionSuccess.value = false;
-  submissionResult.value = null;
+  resetAssignment();
   
   // If it's an assignment, fetch the questions
   if (material.isAssignment) {
@@ -142,88 +144,17 @@ const selectMaterial = async (material) => {
   }
 };
 
-// Fetch assignment questions
-const fetchAssignmentQuestions = async (assignmentId) => {
-  try {
-    isLoadingQuestions.value = true;
-    questionError.value = null;
-    
-    console.log('Fetching questions for assignment ID:', assignmentId);
-    const response = await apiConnector('GET', LIST_QUESTIONS(assignmentId));
-    console.log('Question API response:', response.data);
-    
-    if (response.data && response.data.questions) {
-      questions.value = response.data.questions.map(q => ({
-        id: q.id,
-        question: q.question_description || q.description,
-        options: [q.option1, q.option2, q.option3, q.option4],
-        type: 'MCQ', // Default to MCQ for now
-        correctOption: q.correct_option
-      }));
-      console.log('Processed questions:', questions.value);
-    }
-  } catch (err) {
-    console.error('Error fetching assignment questions:', err);
-    questionError.value = err.message || 'Failed to load assignment questions';
-  } finally {
-    isLoadingQuestions.value = false;
+// Submit assignment handler for CourseView
+const handleSubmitAssignment = async () => {
+  // Make sure we're using the correct assignment ID
+  const assignmentId = currentMaterial.value.assignment_id;
+  
+  if (!assignmentId) {
+    submissionError.value = 'Could not submit: Missing assignment ID';
+    return;
   }
-};
-
-// Handle answer selection
-const selectAnswer = (questionId, optionIndex) => {
-  selectedAnswers.value[questionId] = optionIndex;
-};
-
-// Submit assignment
-const submitAssignment = async () => {
-  try {
-    isSubmitting.value = true;
-    submissionError.value = null;
-    submissionSuccess.value = false;
-    
-    // Validate that all questions have answers
-    const unansweredQuestions = questions.value.filter(q => selectedAnswers.value[q.id] === undefined);
-    
-    if (unansweredQuestions.length > 0) {
-      submissionError.value = `Please answer all questions before submitting. ${unansweredQuestions.length} question(s) remaining.`;
-      isSubmitting.value = false;
-      return;
-    }
-    
-    // Make sure we're using the correct assignment ID
-    const assignmentId = currentMaterial.value.assignment_id;
-    
-    if (!assignmentId) {
-      submissionError.value = 'Could not submit: Missing assignment ID';
-      isSubmitting.value = false;
-      return;
-    }
-    
-    console.log('Submitting answers for assignment ID:', assignmentId);
-    console.log('Answers being submitted:', selectedAnswers.value);
-    
-    // Submit answers to the server using the API function
-    const response = await submitAssignmentAPI(assignmentId, selectedAnswers.value);
-    
-    if (response.status === 201) {
-      // Store the result
-      submissionSuccess.value = true;
-      submissionResult.value = {
-        score: response.data.score.correct,
-        total: response.data.score.total,
-        percentage: response.data.score.percentage
-      };
-    } else {
-      submissionError.value = response.data?.error || 'Failed to submit assignment';
-    }
-    
-  } catch (err) {
-    console.error('Error submitting assignment:', err);
-    submissionError.value = err.response?.data?.error || err.message || 'Failed to submit assignment';
-  } finally {
-    isSubmitting.value = false;
-  }
+  
+  await submitAssignment(assignmentId);
 };
 
 const toggleWriteReview = () => {
@@ -342,7 +273,7 @@ const getFileType = (url) => {
                         <!-- Submit button -->
                         <div class="flex justify-center">
                             <md-filled-button 
-                                @click="submitAssignment" 
+                                @click="handleSubmitAssignment" 
                                 :disabled="isSubmitting || submissionSuccess"
                                 class="px-8"
                             >

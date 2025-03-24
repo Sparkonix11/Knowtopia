@@ -5,7 +5,7 @@ import placeholder from '@/assets/resource_placeholder.png';
 import marksChart from '@/assets/marks_chart.png';
 import { ref, onMounted, computed } from 'vue';
 import { useRoute } from 'vue-router';
-import axios from 'axios';
+import { useAssignment } from '@/handlers/useAssignment';
 
 const route = useRoute();
 const assignmentId = ref(null);
@@ -37,11 +37,17 @@ onMounted(async () => {
       return;
     }
     
-    // Fetch score from API
-    const response = await axios.get(`/api/v1/assignment/score/${assignmentId.value}`);
+    // Use the assignment handler to fetch score
+    const { getAssignmentScore } = useAssignment();
+    const scoreData = await getAssignmentScore(assignmentId.value);
     
-    if (response.data && response.data.score) {
-      score.value = response.data.score;
+    if (scoreData) {
+      score.value = {
+        correct: scoreData.score,
+        total: scoreData.total,
+        percentage: scoreData.percentage,
+        submitted_at: new Date().toISOString()
+      };
     }
     
     isLoading.value = false;

@@ -2,105 +2,76 @@
 import NavbarMain from '@/components/NavbarMain.vue';
 import SidebarCourse from '@/components/SidebarCourse.vue';
 import QuestionCard from '../components/QuestionCard.vue';
-import { ref, onMounted, computed } from 'vue';
+import { onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { getAssignmentAPI, submitAssignmentAPI } from '@/services/operations/assignmentAPI';
-import { questionEndpoints } from '@/services/apis';
-import { apiConnector } from '@/services/apiConnector';
+import { useAssignment } from '@/handlers/useAssignment';
 
 const route = useRoute();
 const router = useRouter();
-const assignmentId = ref(null);
-const assignment = ref(null);
-const questions = ref([]);
-const isLoading = ref(true);
-const error = ref(null);
-const selectedAnswers = ref({});
-const isSubmitting = ref(false);
-const submissionError = ref(null);
+
+// Use the assignment handler
+const {
+  assignmentId,
+  assignment,
+  questions,
+  selectedAnswers,
+  isLoading,
+  isLoadingQuestions,
+  isSubmitting,
+  error,
+  questionError,
+  submissionError,
+  submissionSuccess,
+  submissionResult,
+  fetchAssignment,
+  fetchAssignmentQuestions,
+  selectAnswer,
+  submitAssignment
+} = useAssignment();
 
 // Get assignment ID from route params or query
 onMounted(async () => {
   try {
     // Get assignment ID from route params or query
-    assignmentId.value = route.query.id || route.params.id;
-    console.log('AssignmentView mounted, assignment ID:', assignmentId.value);
+    const id = route.query.id || route.params.id;
+    console.log('AssignmentView mounted, assignment ID:', id);
     console.log('Route query params:', route.query);
     console.log('Route params:', route.params);
     
-    if (!assignmentId.value) {
+    if (!id) {
       error.value = 'Assignment ID is missing';
-      isLoading.value = false;
       console.log('Error: Assignment ID is missing');
       return;
     }
     
-    // Fetch assignment details
-    const assignmentResponse = await getAssignmentAPI(assignmentId.value);
-    if (assignmentResponse.data && assignmentResponse.data.assignment) {
-      assignment.value = assignmentResponse.data.assignment;
-      console.log('Assignment data:', assignment.value);
+    // Fetch assignment details using the handler
+    const assignmentData = await fetchAssignment(id);
+    
+    if (assignmentData) {
+      // Fetch questions for this assignment
+      await fetchAssignmentQuestions(id);
     }
-    
-    // Fetch assignment questions
-    const questionsResponse = await apiConnector('GET', questionEndpoints.LIST_QUESTIONS(assignmentId.value));
-    
-    if (questionsResponse.data && questionsResponse.data.questions) {
-      questions.value = questionsResponse.data.questions.map(q => ({
-        id: q.id,
-        question: q.description,
-        options: [q.option1, q.option2, q.option3, q.option4],
-        type: 'MCQ', // Default to MCQ for now
-        correctOption: q.correct_option
-      }));
-    }
-    
-    isLoading.value = false;
   } catch (err) {
-    console.error('Error fetching assignment:', err);
-    error.value = err.message || 'Failed to load assignment';
-    isLoading.value = false;
+    console.error('Error in AssignmentView:', err);
+    error.value = err.message || 'An error occurred';
   }
 });
 
-// Handle answer selection
-const selectAnswer = (questionId, optionIndex) => {
-  selectedAnswers.value[questionId] = optionIndex;
-};
-
-// Submit assignment
-const submitAssignment = async () => {
-  try {
-    isSubmitting.value = true;
-    submissionError.value = null;
-    
-    // Validate that all questions have answers
-    const unansweredQuestions = questions.value.filter(q => !selectedAnswers.value[q.id]);
-    
-    if (unansweredQuestions.length > 0) {
-      submissionError.value = `Please answer all questions before submitting. ${unansweredQuestions.length} question(s) remaining.`;
-      isSubmitting.value = false;
-      return;
-    }
-    
-    // Submit answers to the server using the API function
-    const response = await submitAssignmentAPI(assignmentId.value, selectedAnswers.value);
-    
-    // Navigate to the report page with the score data
+// Submit assignment and handle redirection
+const handleSubmitAssignment = async () => {
+  const result = await submitAssignment(assignmentId.value);
+  
+  if (result) {
+    // Redirect to the report page with score data
     router.push({
       name: 'AssignmentReport',
       query: {
         id: assignmentId.value,
-        score: response.data.score.correct,
-        total: response.data.score.total,
-        percentage: response.data.score.percentage
+        score: result.score,
+        total: result.total,
+        percentage: result.percentage
       }
     });
-    
-  } catch (err) {
-    console.error('Error submitting assignment:', err);
-    submissionError.value = err.response?.data?.error || err.message || 'Failed to submit assignment';
-    isSubmitting.value = false;
   }
 };
 </script>
@@ -142,7 +113,7 @@ const submitAssignment = async () => {
                 <div class="flex justify-end w-[80%] mx-auto">
                     <md-filled-button 
                         class="w-30 h-14" 
-                        @click="submitAssignment" 
+                        @click="handleSubmitAssignment" 
                         :disabled="isSubmitting"
                     >
                         <md-circular-progress v-if="isSubmitting" indeterminate class="mr-2"></md-circular-progress>
