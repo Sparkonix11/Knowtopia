@@ -15,10 +15,10 @@ export async function getQuestionHintAPI(questionId) {
     }
 }
 
-export async function askAIAPI(question) {
+export async function askAIAPI(payload) {
     try {
-        console.log('Asking AI:', question);
-        const response = await apiConnector('POST', ASK, { question });
+        console.log('Asking AI:', payload.question);
+        const response = await apiConnector('POST', ASK, payload);
         console.log('AI response:', response);
         return response;
     } catch (error) {

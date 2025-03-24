@@ -2,6 +2,7 @@
 import { ref, computed } from 'vue';
 import logo from '@/assets/logo.png';
 import { useStore } from 'vuex';
+import ChatComponent from './ChatComponent.vue';
 
 const menuOpen = ref(false);
 const chatOpen = ref(false);
@@ -12,6 +13,14 @@ const user = computed(() => store.getters["user/currentUser"]);
 
 // Use the provided image or fallback to a default avatar
 const avatar = user.value.image ? `../../server${user.value.image}` : '';
+
+// Get current material ID if available (from route or parent component)
+const props = defineProps({
+    currentMaterialId: {
+        type: [Number, String],
+        default: null
+    }
+});
 
 const toggleMenu = () => {
     menuOpen.value = !menuOpen.value;
@@ -66,36 +75,8 @@ const toggleNotif = () => {
                     <md-icon>chat</md-icon>
                 </md-filled-icon-button>
                 <md-menu id="chat-ai" :open="chatOpen" anchor="user-menu">
-                    <div class="w-200 pt-15 pb-2 px-6 flex flex-col gap-8">
-                        <div class="flex items-center gap-2">
-                            <img :src="avatar" class="w-15 h-15 rounded-full border border-(--md-sys-color-outline)">
-                            <div class="w-120 h-25 border border-(--md-sys-color-outline) rounded-[12px] bg-(--md-sys-color-surface-variant) flex items-center text-justify px-4">
-                                <span>
-                                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed sed rutrum ligula. Duis massa diam, mollis vel vehicula at, tempor et urna. Maecenas eget mi tortor. 
-                                </span>
-                            </div>
-                        </div>
-
-                        <div class="flex items-center gap-2 justify-end">
-                            <div class="w-130 h-25 border border-(--md-sys-color-outline) rounded-[12px] bg-(--md-sys-color-surface-variant) flex items-center text-justify px-4">
-                                <span>
-                                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed sed rutrum ligula. Duis massa diam, mollis vel vehicula at, tempor et urna.
-                                </span>
-                            </div>
-                            <img :src="avatar" class="w-15 h-15 rounded-full border border-(--md-sys-color-outline)">
-
-                        </div>
-
-                        <div class="flex items-center gap-2">
-                            <img :src="avatar" class="w-15 h-15 rounded-full border border-(--md-sys-color-outline)">
-                            <div class="w-140 h-25 border border-(--md-sys-color-outline) rounded-[12px] bg-(--md-sys-color-surface-variant) flex items-center text-justify px-4">
-                                <span>
-                                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed sed rutrum ligula. Duis massa diam, mollis vel vehicula at, tempor et urna. Maecenas a vehicula lorem. Sed vel lacus sed ligula facilisis auctor.
-                                </span>
-                            </div>
-                        </div>
-
-                        <md-outlined-text-field label="Write your Doubt" placeholder="Type Here....." />
+                    <div class="w-full sm:w-80 md:w-96 pt-2 pb-2">
+                        <ChatComponent :current-material-id="props.currentMaterialId" />
                     </div>
                 </md-menu>
             </span>

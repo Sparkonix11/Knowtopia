@@ -81,49 +81,87 @@ class AskResource(Resource):
     def post(self):
         data = request.get_json(force=True)
         question = data.get("question", "").strip()
-        folder_name = data.get("folder_name", "").strip()
+        material_id = data.get("material_id")
 
-        if not question or not folder_name:
-            return {"error": "Both 'question' and 'folder_name' are required."}, 400
-
-        base_dir = "documents"  # Adjust this path as needed.
-        folder_path = os.path.join(base_dir, folder_name)
-
-        if not os.path.exists(folder_path):
-            return {"error": f"Folder '{folder_name}' not found."}, 404
+        if not question:
+            return {"error": "Question is required."}, 400
 
         all_text = ""
-        for filename in os.listdir(folder_path):
-            file_path = os.path.join(folder_path, filename)
-            if os.path.isfile(file_path):
-                file_text = extract_text_from_file(file_path)
-                if file_text:
-                    all_text += f"\n--- Content from {filename} ---\n{file_text}\n"
+        material_name = "General Knowledge"
 
-        print(all_text)
-        if not all_text.strip():
-            return {"error": "No text could be extracted from the specified folder."}, 400
+        # If material_id is provided, fetch context from the material
+        if material_id:
+            # Import Material model
+            from models.material import Material
+            
+            # Fetch material from database
+            material = Material.query.get(material_id)
+            if not material:
+                return {"error": f"Material with ID {material_id} not found."}, 404
+                
+            # Get file path based on material type
+            file_path = None
+            file_name = material.filename
+            material_name = material.name
+            _, ext = os.path.splitext(file_name)
+            ext = ext.lower()
+            
+            # For videos, use transcript if available
+            if ext == ".mp4" and material.transcript_path:
+                # Convert relative path to absolute path
+                transcript_path = material.transcript_path.lstrip('/')
+                file_path = os.path.join(os.getcwd(), transcript_path)
+            else:
+                # For PDFs and other files, use the material file path
+                material_path = material.file_path.lstrip('/')
+                file_path = os.path.join(os.getcwd(), material_path)
+                
+            if not os.path.exists(file_path):
+                return {"error": f"File for material ID {material_id} not found at {file_path}."}, 404
 
+            all_text = extract_text_from_file(file_path)
+            # Don't print the text directly to avoid encoding issues
+            print(f"Extracted text length: {len(all_text) if all_text else 0} characters")
+
+            if not all_text.strip():
+                return {"error": "No text could be extracted from the material."}, 400
+
+        # If no material_id was provided or if we're here after successfully extracting text
         topic_heading = extract_topic_heading(question)
 
         try:
+            # Prepare system message based on whether we have material context or not
+            system_message = "You are an experienced teacher helping a student understand a topic."
+            
+            # Prepare user message based on whether we have material context
+            if all_text.strip():
+                user_message = f"Question: {question}\n\nBackground material from '{material_name}':\n{all_text}"
+            else:
+                # No context available, answer generally
+                user_message = f"Question: {question}"
+                
             response = client.chat.completions.create(
-        model="gpt-3.5-turbo",  # or "gpt-3.5-turbo" depending on your needs
-        messages=[
-            {"role": "system", "content": "You are an experienced teacher helping a student understand a topic."},
-            {"role": "user", "content": f"Question: {question}\n\nBackground material:\n{all_text}"},
-            {"role": "system", "content": "Instead of giving a direct answer, provide hints and guidance to help the student think through the problem. Don't do the work for the student, but help her/him learn how to solve the problem on their own. "}
-        ],
-            max_tokens=150,
-            temperature=0.7,
-            n=1
+                model="gpt-3.5-turbo",
+                messages=[
+                    {"role": "system", "content": system_message},
+                    {"role": "user", "content": user_message},
+                    {"role": "system", "content": "Instead of giving a direct answer, provide hints and guidance to help the student think through the problem. Don't do the work for the student, but help her/him learn how to solve the problem on their own."}
+                ],
+                max_tokens=150,
+                temperature=0.7,
+                n=1
             )
             answer = response.choices[0].message.content.strip()
 
         except Exception as e:
             return {"error": f"OpenAI API error: {str(e)}"}, 500
 
-        return jsonify({"topic": topic_heading, "answer": answer})
+        # Return material name along with the answer, similar to SummarizeResource
+        return jsonify({
+            "topic": topic_heading, 
+            "answer": answer,
+            "material_name": material_name
+        })
 
 class QuestionHintResource(Resource):
     def post(self):
