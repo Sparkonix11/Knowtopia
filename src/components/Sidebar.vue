@@ -16,14 +16,14 @@ const user = computed(() => store.getters["user/currentUser"]);
 
             
         </div>
-        <router-link :to="(route.name === 'EnrolledCourses') ? { name: 'StudentDashboard' } : { name: 'InstructorDashboard' }">
+        <router-link :to="{ name: user?.is_instructor ? 'InstructorDashboard' : 'StudentDashboard' }">
             <div :class="['h-14 rounded-[100px] flex items-center gap-2 px-4', (route.name === 'StudentDashboard' || route.name === 'InstructorDashboard')?'bg-(--md-sys-color-secondary-container)': 'hover:bg-(--md-sys-color-on-surface2)']">
                 <md-icon>dashboard</md-icon>
                 <span>Dashboard</span>
             </div>
         </router-link>
 
-        <router-link :to="(route.name === 'StudentDashboard') ? { name: 'EnrolledCourses' } : { name: 'InstructorCourses' }">
+        <router-link :to="{ name: user?.is_instructor ? 'InstructorCourses' : 'EnrolledCourses' }">
         <div :class="['h-14 rounded-[100px] flex items-center gap-2 px-4', (route.name === 'EnrolledCourses' || route.name === 'InstructorCourses')?'bg-(--md-sys-color-secondary-container)': 'hover:bg-(--md-sys-color-on-surface2)']">
             <md-icon>book</md-icon>
             <span>My Courses</span>
