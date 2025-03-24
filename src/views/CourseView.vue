@@ -81,6 +81,7 @@ onMounted(async () => {
                 return {
                   id: material.material_id,
                   name: material.material_name,
+                  description: material.description,
                   type: material.isAssignment ? 'assignment' : (material.type || 'video'),
                   url: material.file_path ? `../../server${material.file_path}` : null,
                   duration: material.duration,

@@ -4,11 +4,14 @@ import SidebarCourse from '@/components/SidebarCourse.vue';
 import QuestionCard from '../components/QuestionCard.vue';
 import { ref, onMounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import axios from 'axios';
+import { getAssignmentAPI, submitAssignmentAPI } from '@/services/operations/assignmentAPI';
+import { questionEndpoints } from '@/services/apis';
+import { apiConnector } from '@/services/apiConnector';
 
 const route = useRoute();
 const router = useRouter();
 const assignmentId = ref(null);
+const assignment = ref(null);
 const questions = ref([]);
 const isLoading = ref(true);
 const error = ref(null);
@@ -32,11 +35,18 @@ onMounted(async () => {
       return;
     }
     
-    // Fetch assignment questions
-    const response = await axios.get(`/api/v1/question/${assignmentId.value}`);
+    // Fetch assignment details
+    const assignmentResponse = await getAssignmentAPI(assignmentId.value);
+    if (assignmentResponse.data && assignmentResponse.data.assignment) {
+      assignment.value = assignmentResponse.data.assignment;
+      console.log('Assignment data:', assignment.value);
+    }
     
-    if (response.data && response.data.questions) {
-      questions.value = response.data.questions.map(q => ({
+    // Fetch assignment questions
+    const questionsResponse = await apiConnector('GET', questionEndpoints.LIST_QUESTIONS(assignmentId.value));
+    
+    if (questionsResponse.data && questionsResponse.data.questions) {
+      questions.value = questionsResponse.data.questions.map(q => ({
         id: q.id,
         question: q.description,
         options: [q.option1, q.option2, q.option3, q.option4],
@@ -73,10 +83,8 @@ const submitAssignment = async () => {
       return;
     }
     
-    // Submit answers to the server
-    const response = await axios.post(`/api/v1/assignment/submit/${assignmentId.value}`, {
-      answers: selectedAnswers.value
-    });
+    // Submit answers to the server using the API function
+    const response = await submitAssignmentAPI(assignmentId.value, selectedAnswers.value);
     
     // Navigate to the report page with the score data
     router.push({
@@ -111,7 +119,12 @@ const submitAssignment = async () => {
             </div>
             
             <div v-else>
-                <h1 class="text-2xl font-bold mb-6 w-[80%] mx-auto">Assignment Questions</h1>
+                <div class="w-[80%] mx-auto mb-8">
+                    <h1 class="text-2xl font-bold mb-4">{{ assignment?.name || 'Assignment' }}</h1>
+                    <p class="mb-6">{{ assignment?.description || 'No description available for this assignment.' }}</p>
+                </div>
+                
+                <h2 class="text-xl font-bold mb-6 w-[80%] mx-auto">Assignment Questions</h2>
                 
                 <div v-for="question in questions" :key="question.id" class="w-full mb-6">
                     <QuestionCard 
