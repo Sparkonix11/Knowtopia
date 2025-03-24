@@ -74,7 +74,15 @@ class SingleCourseResource(Resource):
                         "material_id": assignment.id,
                         "material_name": assignment.name,
                         "description": assignment.description,
-                        "isAssignment": True
+                        "isAssignment": True,
+                        "assignment_id": assignment.id,
+                        "type": "assignment",
+                        "questions": [{
+                            "id": question.id,
+                            "description": question.description,
+                            "options": [question.option1, question.option2, question.option3, question.option4],
+                            "correct_answer": question.correct_option
+                        } for question in assignment.questions]
                     })
                 
                 total_course_duration += total_week_duration
@@ -134,7 +142,15 @@ class InstructorCoursesResource(Resource):
                             "material_id": assignment.id,
                             "material_name": assignment.name,
                             "description": assignment.description,
-                            "isAssignment": True
+                            "isAssignment": True,
+                            "assignment_id": assignment.id,
+                            "type": "assignment",
+                            "questions": [{
+                                "id": question.id,
+                                "text": question.text,
+                                "options": question.options,
+                                "correct_answer": question.correct_answer
+                            } for question in assignment.questions]
                         })
                     
                     total_course_duration += total_week_duration

@@ -11,6 +11,8 @@ export const assignmentEndpoints = {
     GET_ASSIGNMENT: (assignmentId) => `${API_URL}/assignment/${assignmentId}`,
     CREATE_ASSIGNMENT: (weekId) => `${API_URL}/assignment/create/${weekId}`,
     DELETE_ASSIGNMENT: (assignmentId) => `${API_URL}/assignment/delete/${assignmentId}`,
+    SUBMIT_ASSIGNMENT: (assignmentId) => `${API_URL}/assignment/submit/${assignmentId}`,
+    GET_ASSIGNMENT_SCORE: (assignmentId) => `${API_URL}/assignment/score/${assignmentId}`,
 };
 
 export const courseEndpoints = {

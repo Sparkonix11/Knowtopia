@@ -13,7 +13,7 @@ const handleOptionSelect = (index) => {
 </script>
 
 <template>
-    <div class="w-[80%] h-fit p-12 bg-(--md-sys-color-surface) border border-(--md-sys-color-outline-variant) rounded-[12px] m-auto">
+    <div class="w-full h-fit p-8 bg-(--md-sys-color-surface) border border-(--md-sys-color-outline-variant) rounded-[12px] m-auto">
         <div class="flex justify-between items-center">
             <div class="w-[90%]">
                 <span class="text-xl pr-2">Que.</span>
@@ -36,9 +36,9 @@ const handleOptionSelect = (index) => {
         </div>
 
         <div  v-if="type == 'MSQ'" class="flex flex-col gap-5 mt-6 ">
-            <div v-for="option in options" class="flex text-xl gap-4 items-center">
-                <md-checkbox :id="option" touch-target="wrapper"></md-checkbox>
-                <label :for="option">{{option}}</label>
+            <div v-for="(option, index) in options" :key="index" class="flex text-xl gap-4 items-center">
+                <md-checkbox :id="`${question}-${index}`" touch-target="wrapper"></md-checkbox>
+                <label :for="`${question}-${index}`">{{option}}</label>
             </div>
         </div>
     </div>
