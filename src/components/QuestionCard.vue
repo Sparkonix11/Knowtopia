@@ -8,7 +8,9 @@ defineProps({
 const emit = defineEmits(['select-option']);
 
 const handleOptionSelect = (index) => {
-    emit('select-option', index);
+    // Add 1 to convert from 0-based to 1-based indexing
+    // This ensures the backend receives the correct option number (1-4 instead of 0-3)
+    emit('select-option', index + 1);
 };
 </script>
 
