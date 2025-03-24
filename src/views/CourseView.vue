@@ -316,6 +316,6 @@ const getFileType = (url) => {
     </div>
 
     <WriteReview v-if="showWriteReview" @toggleWriteReview="toggleWriteReview"/>
-    <Summaries v-if="showSummaries" @toggleSummaries="toggleSummaries" />
+    <Summaries v-if="showSummaries" @toggleSummaries="toggleSummaries" :materialId="currentMaterial?.id" />
     
 </template>

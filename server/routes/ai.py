@@ -61,7 +61,7 @@ def extract_text_from_file(file_path):
 def extract_topic_heading(question):
     try:
         response = client.chat.completions.create(
-            model="gpt-4",
+            model="gpt-4o",
             messages=[
                 {"role": "system", "content": "You are an AI trained to summarize questions into concise topic headings."},
                 {"role": "user", "content": f"Extract a short topic heading from this question: {question}"}
@@ -106,7 +106,7 @@ class AskResource(Resource):
 
         try:
             response = client.chat.completions.create(
-        model="gpt-4",  # or "gpt-3.5-turbo" depending on your needs
+        model="gpt-3.5-turbo",  # or "gpt-3.5-turbo" depending on your needs
         messages=[
             {"role": "system", "content": "You are an experienced teacher helping a student understand a topic."},
             {"role": "user", "content": f"Question: {question}\n\nBackground material:\n{all_text}"},
@@ -143,7 +143,7 @@ class QuestionHintResource(Resource):
             options = [question_data.option1, question_data.option2, question_data.option3, question_data.option4]
             
             response = client.chat.completions.create(
-                model="gpt-4",
+                model="gpt-3.5-turbo",
                 messages=[
                     {"role": "system", "content": "You are an experienced teacher who gives hints about the correct answer without revealing it."},
                     {"role": "user", "content": f"Question: {question}\nOptions: {', '.join(options)}\nProvide hints without revealing the answer."},
@@ -162,29 +162,53 @@ class QuestionHintResource(Resource):
 class SummarizeResource(Resource):
     def post(self):
         data = request.get_json(force=True)
-        document_name = data.get("document_name", "").strip()
+        material_id = data.get("material_id")
 
-        if not document_name:
-            return {"error": "Both 'question' and 'document_name' are required."}, 400
+        if not material_id:
+            return {"error": "Material ID is required."}, 400
 
-        base_dir = "documents"
-        file_path = os.path.join(base_dir, document_name)
-
+        # Import Material model
+        from models.material import Material
+        
+        # Fetch material from database
+        material = Material.query.get(material_id)
+        if not material:
+            return {"error": f"Material with ID {material_id} not found."}, 404
+            
+        # Get file path based on material type
+        file_path = None
+        file_name = material.filename
+        _, ext = os.path.splitext(file_name)
+        ext = ext.lower()
+        
+        # For videos, use transcript if available
+        if ext == ".mp4" and material.transcript_path:
+            # Convert relative path to absolute path
+            transcript_path = material.transcript_path.lstrip('/')
+            file_path = os.path.join(os.getcwd(), transcript_path)
+        else:
+            # For PDFs and other files, use the material file path
+            material_path = material.file_path.lstrip('/')
+            file_path = os.path.join(os.getcwd(), material_path)
+            
         if not os.path.exists(file_path):
-            return {"error": f"File '{document_name}' not found."}, 404
+            return {"error": f"File for material ID {material_id} not found at {file_path}."}, 404
 
         all_text = extract_text_from_file(file_path)
         print(all_text)
 
         if not all_text.strip():
-            return {"error": "No text could be extracted from the specified folder."}, 400
+            return {"error": "No text could be extracted from the material."}, 400
 
         try:
+            # Get material name for better context
+            material_name = material.name
+            
             response = client.chat.completions.create(
-                model="gpt-4",
+                model="gpt-3.5-turbo",
                 messages=[
-                    {"role": "system", "content": "You are a helpful AI assistant."},
-                    {"role": "user", "content": f"Question: Provide a summary of the following text in bullet points.\n{all_text}"},
+                    {"role": "system", "content": "You are a helpful AI assistant that creates concise, informative summaries."},
+                    {"role": "user", "content": f"Create a summary of the following material titled '{material_name}' in bullet points.\n\n{all_text}"},
                 ],
                 max_tokens=300,
                 temperature=0.7,
@@ -195,5 +219,11 @@ class SummarizeResource(Resource):
             return {"error": f"OpenAI API error: {str(e)}"}, 500
 
         topic_heading = extract_topic_heading(answer)
-        return jsonify({"topic": topic_heading, "summary": answer})
+        
+        # Return material name along with the summary
+        return jsonify({
+            "topic": topic_heading, 
+            "summary": answer,
+            "material_name": material_name
+        })
 

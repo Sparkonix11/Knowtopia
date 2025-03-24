@@ -1,7 +1,7 @@
 import { apiConnector } from "../apiConnector";
 import { aiEndpoints } from "../apis";
 
-const { ASK, QUESTION_HINT } = aiEndpoints;
+const { ASK, QUESTION_HINT, SUMMARIZE } = aiEndpoints;
 
 export async function getQuestionHintAPI(questionId) {
     try {
@@ -23,6 +23,18 @@ export async function askAIAPI(question) {
         return response;
     } catch (error) {
         console.error('AI ask error:', error);
+        return error.response || { status: 500, data: { error: 'Network error or server not responding' } };
+    }
+}
+
+export async function getSummarizeAPI(materialId) {
+    try {
+        console.log('Requesting summary for material:', materialId);
+        const response = await apiConnector('POST', SUMMARIZE, { material_id: materialId });
+        console.log('Summary response:', response);
+        return response;
+    } catch (error) {
+        console.error('Summary error:', error);
         return error.response || { status: 500, data: { error: 'Network error or server not responding' } };
     }
 }

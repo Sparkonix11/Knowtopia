@@ -54,4 +54,5 @@ export const weekEndpoints = {
 export const aiEndpoints = {
     ASK: `${API_URL}/ask`,
     QUESTION_HINT: `${API_URL}/question_hint`,
+    SUMMARIZE: `${API_URL}/summarize`,
 };

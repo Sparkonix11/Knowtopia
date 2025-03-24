@@ -1,8 +1,46 @@
 <script setup>
+import { ref, onMounted } from 'vue';
+import { getSummarizeAPI } from '@/services/operations/aiAPI';
+
+const props = defineProps({
+    materialId: {
+        type: String,
+        required: true
+    }
+});
+
 const emit = defineEmits(["toggleSummaries"]);
 const toggleSummaries = () => {
     emit("toggleSummaries");
 };
+
+const summary = ref('');
+const topic = ref('');
+const materialName = ref('');
+const isLoading = ref(false);
+const error = ref(null);
+
+onMounted(async () => {
+    try {
+        isLoading.value = true;
+        error.value = null;
+        
+        const response = await getSummarizeAPI(props.materialId);
+        
+        if (response.status === 200) {
+            summary.value = response.data.summary;
+            topic.value = response.data.topic;
+            materialName.value = response.data.material_name;
+        } else {
+            error.value = response.data.error || 'Failed to get summary';
+        }
+    } catch (err) {
+        console.error('Error fetching summary:', err);
+        error.value = err.message || 'An error occurred while fetching the summary';
+    } finally {
+        isLoading.value = false;
+    }
+});
 </script>
 
 <template>
@@ -14,9 +52,28 @@ const toggleSummaries = () => {
                     </md-icon-button>
                 </div>
 
-                <div class="flex flex-col text-justify w-[90%] m-auto gap-10 items-center justify-center h-[80%]">
-                    <span class="text-3xl text-center">Summary Header</span>
-                    <span>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed sed rutrum ligula. Duis massa diam, mollis vel vehicula at, tempor et urna. Maecenas eget mi tortor. Maecenas a vehicula lorem. Sed vel lacus sed ligula facilisis auctor. Maecenas eu nunc vestibulum, molestie eros in, fermentum sem. Sed hendrerit massa dui, at vehicula felis convallis vitae. Nulla facilisi. Maecenas cursus finibus urna non accumsan. Aliquam vehicula lacus eget congue lobortis. Nam velit enim, fermentum ac eros sit amet, iaculis tincidunt risus. Fusce lacinia rhoncus quam. Sed hendrerit pharetra nulla, et iaculis neque eleifend ut. Phasellus vitae egestas felis. Morbi libero arcu, mattis sed ante id, luctus accumsan lectus. Nullam sagittis, risus vel lobortis venenatis, urna sem pellentesque ipsum, in dignissim dolor tortor vel urna. In rutrum ligula non scelerisque cursus. Nunc laoreet diam lacus, vel volutpat neque iaculis at. Mauris sit amet vestibulum arcu. In ullamcorper risus in faucibus ullamcorper. Donec eu venenatis nulla. Etiam eu mattis nisi, sed pulvinar elit. Vestibulum placerat justo ac est sagittis finibus. Etiam congue, lacus tristique fringilla semper, sem sem elementum ligula, quis dignissim odio ipsum nec mi. Nam sodales mollis rutrum. Aenean condimentum lorem vitae dapibus blandit. Nam eget leo in est aliquam mattis. Nulla porttitor lacinia dolor, sit amet pellentesque ante porttitor et. Pellentesque nec est consequat, laoreet risus id, maximus ex. Pellentesque mollis eu ante molestie scelerisque. Duis finibus felis est, non sodales magna vestibulum nec. Fusce massa ante, interdum nec elementum at, vehicula in metus. Duis et neque rutrum, commodo ex non, condimentum nisi. Quisque erat nunc, rhoncus id elementum commodo, elementum eget libero.</span>
+                <div class="flex flex-col text-justify w-[90%] m-auto gap-6 items-center justify-center h-[80%] overflow-y-auto">
+                    <!-- Loading state -->
+                    <div v-if="isLoading" class="flex justify-center items-center h-full w-full">
+                        <md-circular-progress indeterminate></md-circular-progress>
+                    </div>
+                    
+                    <!-- Error state -->
+                    <div v-else-if="error" class="bg-(--md-sys-color-error-container) text-(--md-sys-color-on-error-container) p-4 rounded-lg mb-4 w-full">
+                        <div class="flex items-center gap-2">
+                            <md-icon>error</md-icon>
+                            <span>{{ error }}</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Summary content -->
+                    <template v-else>
+                        <span class="text-3xl text-center">{{ materialName }}</span>
+                        <span class="text-xl text-center text-(--md-sys-color-primary)">{{ topic }}</span>
+                        <div class="w-full">
+                            <span v-html="summary.replace(/\n/g, '<br>')" class="whitespace-pre-line"></span>
+                        </div>
+                    </template>
                 </div>
             </div>
         </div>
