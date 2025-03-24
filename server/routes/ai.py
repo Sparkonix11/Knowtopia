@@ -23,6 +23,8 @@ def extract_text_from_pdf(file_path):
             for page in pdf.pages:
                 page_text = page.extract_text()
                 if page_text:
+                    # Clean the text of problematic Unicode characters
+                    page_text = ''.join(char if ord(char) < 0xF000 else ' ' for char in page_text)
                     text += page_text + "\n"
     except Exception as e:
         print(f"Error processing PDF {file_path}: {e}")
@@ -195,7 +197,8 @@ class SummarizeResource(Resource):
             return {"error": f"File for material ID {material_id} not found at {file_path}."}, 404
 
         all_text = extract_text_from_file(file_path)
-        print(all_text)
+        # Don't print the text directly to avoid encoding issues
+        print(f"Extracted text length: {len(all_text) if all_text else 0} characters")
 
         if not all_text.strip():
             return {"error": "No text could be extracted from the material."}, 400
