@@ -51,6 +51,10 @@ onMounted(async () => {
   try {
     isLoading.value = true;
     
+    // Check if we have an assignmentId in the query parameters
+    const assignmentIdFromQuery = route.query.assignmentId;
+    console.log('Assignment ID from query:', assignmentIdFromQuery);
+    
     // First, get a list of courses to find the course ID
     const listResponse = isInstructor.value 
       ? await getInstructorCoursesAPI()
@@ -63,42 +67,81 @@ onMounted(async () => {
         ? listResponse.data.courses 
         : listResponse.data.enrolled_courses;
       
-      // Find the current course (in a real app, you'd use route params)
-      // For now, we'll just take the first course if available
-      if (courses && courses.length > 0) {
-        // Get the course ID
-        const courseId = courses[0].id;
+      // Find the current course (use route params if available, otherwise take first course)
+      const courseIdFromParams = route.params.id;
+      let courseId;
+      
+      if (courseIdFromParams) {
+        // Use the course ID from route params if available
+        courseId = courseIdFromParams;
+      } else if (courses && courses.length > 0) {
+        // Otherwise use the first course
+        courseId = courses[0].id;
+      } else {
+        error.value = 'No courses available';
+        isLoading.value = false;
+        return;
+      }
+      
+      // Fetch the specific course with all its data
+      const courseResponse = await getSingleCourseAPI(courseId);
+      
+      if (courseResponse.status === 200) {
+        courseData.value = courseResponse.data.course;
         
-        // Fetch the specific course with all its data
-        const courseResponse = await getSingleCourseAPI(courseId);
-        
-        if (courseResponse.status === 200) {
-          courseData.value = courseResponse.data.course;
+        // Transform weeks (lectures) data to the format expected by SidebarCourse
+        if (courseData.value.weeks && courseData.value.weeks.length > 0) {
+          lectureData.value.lectures = courseData.value.weeks.map(week => ({
+            id: week.id,
+            name: week.name,
+            subLectures: week.materials ? week.materials.map(material => {
+              // Log material data to debug assignment_id issues
+              console.log('Processing material:', material);
+              
+              return {
+                id: material.material_id,
+                name: material.material_name,
+                description: material.description,
+                type: material.isAssignment ? 'assignment' : (material.type || 'video'),
+                url: material.file_path ? `../../server${material.file_path}` : null,
+                duration: material.duration,
+                isAssignment: material.isAssignment || material.type === 'assignment',
+                // Store the assignment ID separately if this is an assignment
+                assignment_id: material.isAssignment ? material.assignment_id : null
+              };
+            }) : []
+          }));
           
-          // Transform weeks (lectures) data to the format expected by SidebarCourse
-          if (courseData.value.weeks && courseData.value.weeks.length > 0) {
-            lectureData.value.lectures = courseData.value.weeks.map(week => ({
-              id: week.id,
-              name: week.name,
-              subLectures: week.materials ? week.materials.map(material => {
-                // Log material data to debug assignment_id issues
-                console.log('Processing material:', material);
-                
-                return {
-                  id: material.material_id,
-                  name: material.material_name,
-                  description: material.description,
-                  type: material.isAssignment ? 'assignment' : (material.type || 'video'),
-                  url: material.file_path ? `../../server${material.file_path}` : null,
-                  duration: material.duration,
-                  isAssignment: material.isAssignment || material.type === 'assignment',
-                  // Store the assignment ID separately if this is an assignment
-                  assignment_id: material.isAssignment ? material.assignment_id : null
-                };
-              }) : []
-            }));
+          // If we have an assignmentId in the query, find and select that assignment
+          if (assignmentIdFromQuery) {
+            let foundAssignment = false;
             
-            // Set first material as current if available
+            // Search through all lectures and materials to find the matching assignment
+            for (const lecture of lectureData.value.lectures) {
+              for (const material of lecture.subLectures) {
+                if (material.isAssignment && material.assignment_id == assignmentIdFromQuery) {
+                  // Found the assignment, select it
+                  console.log('Found matching assignment:', material);
+                  currentMaterial.value = material;
+                  foundAssignment = true;
+                  
+                  // Load the assignment questions
+                  await selectMaterial(material);
+                  break;
+                }
+              }
+              if (foundAssignment) break;
+            }
+            
+            if (!foundAssignment) {
+              console.warn('Assignment not found with ID:', assignmentIdFromQuery);
+              // Set first material as current if available
+              if (lectureData.value.lectures[0]?.subLectures?.length > 0) {
+                currentMaterial.value = lectureData.value.lectures[0].subLectures[0];
+              }
+            }
+          } else {
+            // No assignment ID in query, set first material as current if available
             if (lectureData.value.lectures[0]?.subLectures?.length > 0) {
               currentMaterial.value = lectureData.value.lectures[0].subLectures[0];
             }
@@ -119,6 +162,31 @@ onMounted(async () => {
     isLoading.value = false;
   }
 });
+//         } else {
+//           error.value = 'Failed to fetch course data';
+//         }
+//       } else {
+//         error.value = 'No courses available';
+//       }
+//     } else {
+//       error.value = 'Failed to fetch course list';
+//     }
+//         } else {
+//           error.value = 'Failed to fetch course data';
+//         }
+//       } else {
+//         error.value = 'No courses available';
+//       }
+//     } else {
+//       error.value = 'Failed to fetch course list';
+//     }
+//   } catch (err) {
+//     console.error('Error fetching course data:', err);
+//     error.value = err.message || 'An error occurred while fetching course data';
+//   } finally {
+//     isLoading.value = false;
+//   }
+// });
 
 const selectMaterial = async (material) => {
   console.log('Material selected:', material);

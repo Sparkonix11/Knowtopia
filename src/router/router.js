@@ -11,6 +11,7 @@ import ProfileView from "@/views/ProfileView.vue";
 import StudentDashboard from "@/views/StudentDashboard.vue";
 import InstructorEnrollStudentsView from "@/views/InstructorEnrollStudentsView.vue";
 import CreateAssignmentView from "@/views/CreateAssignmentView.vue";
+import AssignmentsView from "@/views/AssignmentsView.vue";
 
 const router = createRouter({
     history: createWebHistory(),
@@ -40,15 +41,15 @@ const router = createRouter({
             component: InstructorCoursesView
         },
         {
-            path: '/course',
+            path: '/course/:id?',
             name: 'Course',
             component: CourseView
         },
-        {
-            path: '/assignment',
-            name: 'Assignment',
-            component: AssignmentView
-        },
+        // {
+        //     path: '/assignment',
+        //     name: 'Assignment',
+        //     component: AssignmentView
+        // },
         {
             path: '/assignment-report',
             name: 'AssignmentReport',
@@ -78,6 +79,11 @@ const router = createRouter({
             path: '/create-assignment',
             name: 'CreateAssignment',
             component: CreateAssignmentView
+        },
+        {
+            path: '/assignments',
+            name: 'Assignments',
+            component: AssignmentsView
         }
     ]
 });

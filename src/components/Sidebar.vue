@@ -33,9 +33,9 @@ const user = computed(() => store.getters["user/currentUser"]);
             <md-icon>menu_book</md-icon>
             <span>Study Material</span>
         </div> -->
-        <router-link :to="{ name: 'Assignment' }">
-        <div :class="['h-14 rounded-[100px] flex items-center gap-2 px-4', route.name === 'Assignmets'?'bg-(--md-sys-color-secondary-container)': 'hover:bg-(--md-sys-color-on-surface2)']">
-            <md-icon>two_pager</md-icon>
+        <router-link :to="{ name: 'Assignments' }">
+        <div :class="['h-14 rounded-[100px] flex items-center gap-2 px-4', route.name === 'Assignments'?'bg-(--md-sys-color-secondary-container)': 'hover:bg-(--md-sys-color-on-surface2)']">
+            <md-icon>assignment</md-icon>
             <span>Assignments</span>
         </div>
         </router-link>
