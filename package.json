@@ -15,6 +15,7 @@
     "@material/web": "^2.2.0",
     "@tailwindcss/vite": "^4.0.1",
     "axios": "^1.7.9",
+    "chart.js": "^4.4.8",
     "concurrently": "^9.1.2",
     "tailwindcss": "^4.0.1",
     "vue": "^3.5.13",
