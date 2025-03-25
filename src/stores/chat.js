@@ -49,7 +49,7 @@ export default {
                 // Send message to API
                 const payload = {
                     question: message,
-                    ...(state.currentMaterialId && { material_id: state.currentMaterialId })
+                    material_id: state.currentMaterialId
                 };
                 
                 console.log('Sending payload:', payload);

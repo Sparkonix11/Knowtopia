@@ -124,6 +124,7 @@ const selectMaterial = async (material) => {
   console.log('Material selected:', material);
   // Always update the current material regardless of type
   currentMaterial.value = material;
+  store.dispatch('chat/setCurrentMaterial', material.id);
   
   // Reset assignment-related state when switching materials
   resetAssignment();
