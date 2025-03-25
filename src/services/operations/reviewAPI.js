@@ -35,3 +35,12 @@ export async function deleteReviewAPI(reviewId) {
     throw error;
   }
 }
+
+export async function fetchInstructorReviewsAPI() {
+  try {
+    const response = await apiConnector("GET", reviewEndpoints.INSTRUCTOR_REVIEWS);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+}

@@ -135,23 +135,23 @@ class InstructorCoursesResource(Resource):
                         })
                     
                     # Get assignments for this week
-                    from models import Assignment
-                    assignments = Assignment.query.filter_by(week_id=week.id).all()
-                    for assignment in assignments:
-                        materials_data.append({
-                            "material_id": assignment.id,
-                            "material_name": assignment.name,
-                            "description": assignment.description,
-                            "isAssignment": True,
-                            "assignment_id": assignment.id,
-                            "type": "assignment",
-                            "questions": [{
-                                "id": question.id,
-                                "text": question.text,
-                                "options": question.options,
-                                "correct_answer": question.correct_answer
-                            } for question in assignment.questions]
-                        })
+                    # from models import Assignment
+                    # assignments = Assignment.query.filter_by(week_id=week.id).all()
+                    # for assignment in assignments:
+                    #     materials_data.append({
+                    #         "material_id": assignment.id,
+                    #         "material_name": assignment.name,
+                    #         "description": assignment.description,
+                    #         "isAssignment": True,
+                    #         "assignment_id": assignment.id,
+                    #         "type": "assignment",
+                    #         "questions": [{
+                    #             "id": question.id,
+                    #             "text": question.description,
+                    #             "options": question.options,
+                    #             "correct_answer": question.correct_answer
+                    #         } for question in assignment.questions]
+                    #     })
                     
                     total_course_duration += total_week_duration
                     weeks_data.append({

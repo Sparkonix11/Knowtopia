@@ -39,6 +39,7 @@ export const questionEndpoints = {
 export const reviewEndpoints = {
     REVIEW: (materialId) => `${API_URL}/review/${materialId}`,
     DELETE_REVIEW: (reviewId) => `${API_URL}/review/delete/${reviewId}`,
+    INSTRUCTOR_REVIEWS: `${API_URL}/review/instructor`,
 };
 
 export const userEndpoints = {
