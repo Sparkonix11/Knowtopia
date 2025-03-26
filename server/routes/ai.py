@@ -88,6 +88,29 @@ class AskResource(Resource):
 
         all_text = ""
         material_name = "General Knowledge"
+        
+        # If the user is logged in and asking about a specific material, record it as a doubt
+        from flask_login import current_user
+        if current_user.is_authenticated and material_id:  
+            try:
+                # Import MaterialDoubt model
+                from models.material_doubt import MaterialDoubt
+                
+                # Create a new doubt record
+                new_doubt = MaterialDoubt(
+                    material_id=material_id,
+                    student_id=current_user.id,
+                    doubt_text=question
+                )
+                
+                # Add to database
+                from models import db
+                db.session.add(new_doubt)
+                db.session.commit()
+                print(f"Doubt recorded for material {material_id} by user {current_user.id}")
+            except Exception as e:
+                print(f"Error recording doubt: {str(e)}")
+                # Continue processing even if doubt recording fails
 
         # If material_id is provided, fetch context from the material
         if material_id:

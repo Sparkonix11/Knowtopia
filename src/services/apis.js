@@ -13,6 +13,8 @@ export const assignmentEndpoints = {
     DELETE_ASSIGNMENT: (assignmentId) => `${API_URL}/assignment/delete/${assignmentId}`,
     SUBMIT_ASSIGNMENT: (assignmentId) => `${API_URL}/assignment/submit/${assignmentId}`,
     GET_ASSIGNMENT_SCORE: (assignmentId) => `${API_URL}/assignment/score/${assignmentId}`,
+    ALL_ASSIGNMENT_SCORES: `${API_URL}/assignment/all-scores`,
+    ASSIGNMENT_SCORES: (assignmentId) => `${API_URL}/assignment/${assignmentId}/scores`,
 };
 
 export const courseEndpoints = {
@@ -56,4 +58,11 @@ export const aiEndpoints = {
     ASK: `${API_URL}/ask`,
     QUESTION_HINT: `${API_URL}/question_hint`,
     SUMMARIZE: `${API_URL}/summarize`,
+};
+
+export const materialDoubtEndpoints = {
+    CREATE_DOUBT: (materialId) => `${API_URL}/material/${materialId}/doubt`,
+    MATERIAL_DOUBTS: (materialId) => `${API_URL}/material/${materialId}/doubts`,
+    ALL_MATERIAL_DOUBTS: `${API_URL}/material/all-doubts`,
+    STUDENT_DOUBTS: `${API_URL}/material/student-doubts`,
 };

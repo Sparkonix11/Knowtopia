@@ -9,6 +9,9 @@ from .review import ReviewResource, ReviewDeleteResource, InstructorReviewsResou
 from .user import UserProfileResource, UserStudentListResource, DeleteUserResource
 from .week import WeekCreateResource, WeekDeletionResource
 from .ai import AskResource, QuestionHintResource, SummarizeResource
+from .assignment_scores import AssignmentScoresResource, AllAssignmentScoresResource
+from .material_doubts import MaterialDoubtCreateResource, MaterialDoubtsResource, AllMaterialDoubtsResource, StudentDoubtsResource
+
 
 def init_routes(app):
     api = Api(app, prefix='/api/v1')
@@ -19,6 +22,16 @@ def init_routes(app):
     api.add_resource(DeleteAssignmentResource, '/assignment/delete/<int:assignment_id>')
     api.add_resource(AssignmentSubmissionResource, '/assignment/submit/<int:assignment_id>')
     api.add_resource(AssignmentScoreResource, '/assignment/score/<int:assignment_id>')
+    
+    # Assignment Scores Routes (for instructor dashboard)
+    api.add_resource(AssignmentScoresResource, '/assignment/<int:assignment_id>/scores')
+    api.add_resource(AllAssignmentScoresResource, '/assignment/all-scores')
+    
+    # Material Doubts Routes (for instructor dashboard)
+    api.add_resource(MaterialDoubtCreateResource, '/material/<int:material_id>/doubt')
+    api.add_resource(MaterialDoubtsResource, '/material/<int:material_id>/doubts')
+    api.add_resource(AllMaterialDoubtsResource, '/material/all-doubts')
+    api.add_resource(StudentDoubtsResource, '/material/student-doubts')
 
     # Auth Routes
     api.add_resource(SignupResource, '/auth/signup')

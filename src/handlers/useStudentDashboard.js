@@ -2,6 +2,7 @@ import { ref, computed } from 'vue';
 import { useStore } from 'vuex';
 import { apiConnector } from '../services/apiConnector';
 import { assignmentEndpoints } from '../services/apis';
+import { getStudentDoubtsAPI } from '../services/operations/materialDoubtAPI';
 
 export function useStudentDashboard() {
   const store = useStore();
@@ -78,51 +79,34 @@ export function useStudentDashboard() {
     }
   };
   
-  // Fetch chat doubts data from the chat store
+  // Fetch chat doubts data from the backend API
   const fetchChatDoubts = async () => {
     try {
       isLoadingDoubts.value = true;
       doubtsError.value = null;
       
-      // Get chat history from the store
-      const conversations = store.state.chat.conversations;
+      // Get doubts data from the API
+      const response = await getStudentDoubtsAPI();
       
-      // Process chat data to count doubts per day
-      const doubtsPerDay = {};
-      const today = new Date();
-      
-      // Initialize the last 10 days with 0 doubts
-      for (let i = 9; i >= 0; i--) {
-        const date = new Date(today);
-        date.setDate(today.getDate() - i);
-        const dateString = date.toISOString().split('T')[0]; // Format: YYYY-MM-DD
-        doubtsPerDay[dateString] = 0;
+      if (response.status !== 200) {
+        throw new Error(response.data?.error || 'Failed to fetch doubts data');
       }
       
-      // Count user messages (doubts) per day
-      Object.values(conversations).forEach(conversation => {
-        conversation.forEach(message => {
-          if (message.isUser) {
-            const messageDate = new Date(message.timestamp).toISOString().split('T')[0];
-            if (doubtsPerDay[messageDate] !== undefined) {
-              doubtsPerDay[messageDate]++;
-            }
-          }
-        });
-      });
+      // Get the doubts by day data
+      const doubtsData = response.data.doubts_by_day || [];
       
-      // Convert to array format for chart.js
-      const doubtsData = Object.entries(doubtsPerDay).map(([date, count], index) => ({
+      // Format the data for the chart
+      const formattedData = doubtsData.map((item, index) => ({
         day: index + 1, // Day number (1-10)
-        date, // Full date string
-        count // Number of doubts
+        date: item.date, // Date string
+        count: item.count // Number of doubts
       }));
       
-      chatDoubts.value = doubtsData;
-      return doubtsData;
+      chatDoubts.value = formattedData;
+      return formattedData;
     } catch (err) {
-      console.error('Error processing chat doubts:', err);
-      doubtsError.value = err.message || 'Failed to process chat data';
+      console.error('Error fetching chat doubts:', err);
+      doubtsError.value = err.message || 'Failed to load doubts data';
       return [];
     } finally {
       isLoadingDoubts.value = false;

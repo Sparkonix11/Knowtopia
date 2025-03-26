@@ -10,7 +10,8 @@ from .material import Material
 from .week import Week
 from .course import Course
 from .enrollment import Enrollment
-from.score import Score
+from .score import Score
+from .material_doubt import MaterialDoubt
 
 def init_db(app):
     # Flask-Migrate will handle database creation and migrations
