@@ -77,6 +77,7 @@ class SingleCourseResource(Resource):
                         "isAssignment": True,
                         "assignment_id": assignment.id,
                         "type": "assignment",
+                        "due_date": assignment.due_date.isoformat() if assignment.due_date else None,
                         "questions": [{
                             "id": question.id,
                             "description": question.description,

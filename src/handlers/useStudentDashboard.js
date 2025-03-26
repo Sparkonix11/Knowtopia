@@ -1,7 +1,7 @@
 import { ref, computed } from 'vue';
 import { useStore } from 'vuex';
 import { apiConnector } from '../services/apiConnector';
-import { assignmentEndpoints } from '../services/apis';
+import { assignmentEndpoints, materialEndpoints, courseEndpoints } from '../services/apis';
 import { getStudentDoubtsAPI } from '../services/operations/materialDoubtAPI';
 
 export function useStudentDashboard() {
@@ -16,6 +16,85 @@ export function useStudentDashboard() {
   const chatDoubts = ref([]);
   const isLoadingDoubts = ref(false);
   const doubtsError = ref(null);
+  
+  // State for upcoming assignments
+  const upcomingAssignments = ref([]);
+  const isLoadingAssignments = ref(false);
+  const assignmentsError = ref(null);
+  
+  // Fetch upcoming assignments with due dates
+  const fetchUpcomingAssignments = async () => {
+    try {
+      isLoadingAssignments.value = true;
+      assignmentsError.value = null;
+      
+      // Get enrolled courses from the API
+      const coursesResponse = await apiConnector('GET', courseEndpoints.ENROLLED_COURSES);
+      
+      if (coursesResponse.status !== 200) {
+        throw new Error(coursesResponse.data?.error || 'Failed to fetch enrolled courses');
+      }
+      
+      const enrolledCourses = coursesResponse.data.enrolled_courses || [];
+      const allAssignments = [];
+      
+      // For each course, get assignments with due dates
+      for (const course of enrolledCourses) {
+        const courseResponse = await apiConnector('GET', courseEndpoints.SINGLE_COURSE(course.id));
+        
+        if (courseResponse.status === 200) {
+          const courseData = courseResponse.data.course;
+          
+          // Process each week to find assignments
+          for (const week of courseData.weeks) {
+            // Find materials that are assignments
+            const weekAssignments = week.materials.filter(material => material.isAssignment);
+            
+            // Add course and week info to each assignment
+            weekAssignments.forEach(assignment => {
+              if (assignment.due_date) {
+                allAssignments.push({
+                  id: assignment.assignment_id,
+                  name: assignment.material_name,
+                  description: assignment.description || '',
+                  due_date: assignment.due_date,
+                  courseId: course.id,
+                  courseName: course.name,
+                  weekId: week.id,
+                  weekName: week.name
+                });
+              }
+            });
+          }
+        }
+      }
+      
+      // Sort assignments by due date (ascending)
+      allAssignments.sort((a, b) => {
+        const dateA = new Date(a.due_date);
+        const dateB = new Date(b.due_date);
+        return dateA - dateB;
+      });
+      
+      // Filter to only show upcoming assignments (due date >= today)
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      const upcoming = allAssignments.filter(assignment => {
+        const dueDate = new Date(assignment.due_date);
+        return dueDate >= today;
+      });
+      
+      upcomingAssignments.value = upcoming;
+      return upcoming;
+    } catch (err) {
+      console.error('Error fetching upcoming assignments:', err);
+      assignmentsError.value = err.message || 'Failed to load upcoming assignments';
+      return [];
+    } finally {
+      isLoadingAssignments.value = false;
+    }
+  };
   
   // Fetch assignment marks data
   const fetchAssignmentMarks = async () => {
@@ -141,12 +220,16 @@ export function useStudentDashboard() {
   return {
     assignmentMarks,
     chatDoubts,
+    upcomingAssignments,
     isLoadingMarks,
     isLoadingDoubts,
+    isLoadingAssignments,
     marksError,
     doubtsError,
+    assignmentsError,
     fetchAssignmentMarks,
     fetchChatDoubts,
+    fetchUpcomingAssignments,
     marksChartData,
     doubtsChartData
   };

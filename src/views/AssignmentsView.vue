@@ -67,6 +67,7 @@ const fetchInstructorAssignments = async () => {
               id: assignment.assignment_id,
               name: assignment.material_name,
               description: assignment.description || '',
+              due_date: assignment.due_date,
               courseId: course.id,
               courseName: course.name,
               weekId: week.id,
@@ -116,6 +117,7 @@ const fetchStudentAssignments = async () => {
               id: assignment.assignment_id,
               name: assignment.material_name,
               description: assignment.description || '',
+              due_date: assignment.due_date,
               courseId: course.id,
               courseName: course.name,
               weekId: week.id,
@@ -141,6 +143,11 @@ const goToAssignment = (assignment) => {
     params: { id: assignment.courseId },
     query: { assignmentId: assignment.id }
   });
+};
+// Format date for display
+const formatDueDate = (dateString) => {
+  const date = new Date(dateString);
+  return date.toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
 };
 </script>
 
@@ -184,9 +191,13 @@ const goToAssignment = (assignment) => {
               <md-icon class="text-sm mr-1">book</md-icon>
               <span>{{ assignment.courseName }}</span>
             </div>
-            <div class="flex items-center">
+            <div class="flex items-center mb-1">
               <md-icon class="text-sm mr-1">calendar_today</md-icon>
               <span>{{ assignment.weekName }}</span>
+            </div>
+            <div v-if="assignment.due_date" class="flex items-center">
+              <md-icon class="text-sm mr-1">schedule</md-icon>
+              <span>Due: {{ formatDueDate(assignment.due_date) }}</span>
             </div>
           </div>
         </div>

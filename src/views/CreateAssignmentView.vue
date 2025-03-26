@@ -11,6 +11,7 @@ const router = useRouter();
 const {
   title,
   description,
+  dueDate,
   questions,
   formErrors,
   isLoading,
@@ -127,6 +128,19 @@ const cancelForm = () => {
               :class="{'border-red-500': formErrors.description}"
             ></textarea>
             <p v-if="formErrors.description" class="text-red-500 text-sm mt-1">{{ formErrors.description }}</p>
+          </div>
+          
+          <!-- Due Date -->
+          <div class="mb-6">
+            <label for="dueDate" class="block text-sm font-medium mb-1">Due Date</label>
+            <input 
+              type="datetime-local" 
+              id="dueDate" 
+              v-model="dueDate" 
+              class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              :class="{'border-red-500': formErrors.dueDate}"
+            >
+            <p v-if="formErrors.dueDate" class="text-red-500 text-sm mt-1">{{ formErrors.dueDate }}</p>
           </div>
           
           <!-- Questions Section -->

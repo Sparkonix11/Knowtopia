@@ -2,6 +2,7 @@ from flask import request
 from flask_restful import Resource
 from flask_login import login_required, current_user
 from models import db, Assignment, Week
+from datetime import datetime
 
 
 class AssignmentResource(Resource):
@@ -16,6 +17,7 @@ class AssignmentResource(Resource):
                 'id': assignment.id,
                 'name': assignment.name,
                 'description': assignment.description,
+                'due_date': assignment.due_date.isoformat() if assignment.due_date else None,
                 'week_id': assignment.week_id
             }
             return {'assignment': assignment_data}, 200
@@ -38,9 +40,19 @@ class CreateAssignmentResource(Resource):
             if not all(field in data for field in required_fields):
                 return {'error': 'Missing required fields'}, 400
             
+            # Parse due_date if provided
+            due_date = None
+            if 'due_date' in data and data['due_date']:
+                try:
+                    # Parse the date string from frontend
+                    due_date = datetime.strptime(data['due_date'], '%Y-%m-%dT%H:%M')
+                except ValueError:
+                    return {'error': 'Invalid due date format'}, 400
+            
             new_assignment = Assignment(
                 name=data['name'],
                 description=data['description'],
+                due_date=due_date,
                 week_id=week_id
             )
             db.session.add(new_assignment)
@@ -50,6 +62,7 @@ class CreateAssignmentResource(Resource):
                 'id': new_assignment.id,
                 'name': new_assignment.name,
                 'description': new_assignment.description,
+                'due_date': new_assignment.due_date.isoformat() if new_assignment.due_date else None,
                 'week_id': new_assignment.week_id
             }
             return {'message': 'Assignment created', 'assignment': assignment_data}, 201

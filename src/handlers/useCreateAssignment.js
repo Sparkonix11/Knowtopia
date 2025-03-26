@@ -10,6 +10,7 @@ export function useCreateAssignment() {
   // Form state
   const title = ref('');
   const description = ref('');
+  const dueDate = ref('');
   const questions = ref([{
     question_description: '',
     option1: '',
@@ -30,6 +31,7 @@ export function useCreateAssignment() {
   const formErrors = ref({
     title: '',
     description: '',
+    dueDate: '',
     questions: [],
     course: '',
     week: ''
@@ -67,6 +69,7 @@ export function useCreateAssignment() {
     formErrors.value = {
       title: '',
       description: '',
+      dueDate: '',
       questions: [],
       course: '',
       week: ''
@@ -175,6 +178,9 @@ export function useCreateAssignment() {
       const formData = new FormData();
       formData.append('name', title.value);
       formData.append('description', description.value);
+      if (dueDate.value) {
+        formData.append('due_date', dueDate.value);
+      }
   
       if (!selectedWeek.value || !selectedWeek.value.id) {
         throw new Error('Please select a valid week');
@@ -252,6 +258,7 @@ export function useCreateAssignment() {
   return {
     title,
     description,
+    dueDate,
     questions,
     formErrors,
     isLoading,
