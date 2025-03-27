@@ -1,6 +1,7 @@
 <script setup>
 import NavBarMain from '@/components/NavBarMain.vue';
 import SidebarCourse from '@/components/SidebarCourse.vue';
+import MinimalSidebarCourse from '@/components/MinimalSidebarCourse.vue';
 import placeholder from '@/assets/placeholder.mp4';
 import WriteReview from '@/components/WriteReview.vue';
 import Summaries from '@/components/Summaries.vue';
@@ -247,15 +248,22 @@ const getFileType = (url) => {
 <template>
     <NavBarMain class="fixed top-0 left-0 right-0 z-20" />
     <div class="flex pt-20">
-        <!-- Sidebar with real lecture data -->
-        <SidebarCourse 
-            :lectures="lectureData.lectures" 
+        <!-- Minimal sidebar with icons only -->
+        <MinimalSidebarCourse
+            :lectures="lectureData.lectures"
             @select-material="selectMaterial"
             class="top-20"
         />
         
+        <!-- Sidebar with real lecture data -->
+        <SidebarCourse 
+            :lectures="lectureData.lectures" 
+            @select-material="selectMaterial"
+            class="top-20 left-14"
+        />
+        
         <!-- Main content area -->
-        <div class="flex-1 flex flex-col my-10 gap-6 w-full px-6 ml-[20%]">
+        <div class="flex-1 flex flex-col my-10 gap-6 w-full px-6 ml-[calc(20%+3.5rem)]">
             <!-- Loading state -->
             <div v-if="isLoading" class="flex justify-center items-center h-[50vh] w-full">
                 <md-circular-progress indeterminate></md-circular-progress>
