@@ -3,10 +3,15 @@ import { ref, computed } from 'vue';
 import logo from '@/assets/logo.png';
 import { useStore } from 'vuex';
 import ChatComponent from './ChatComponent.vue';
+import { useSearch } from '@/handlers/useSearch';
 
 const menuOpen = ref(false);
 const chatOpen = ref(false);
 const notifOpen = ref(false);
+const searchQuery = ref('');
+
+// Initialize search handler
+const { performSearch } = useSearch();
 
 const store = useStore();
 const user = computed(() => store.getters["user/currentUser"]);
@@ -61,8 +66,14 @@ const toggleNotif = () => {
 
         <div class="flex-1 flex items-center justify-center">
             <div class="relative flex items-center justify-center">
-                <input type="text" placeholder="Search Bar" class="w-147 h-14 rounded-[28px] border-1 p-2 px-8">
-                <md-icon-button class="absolute right-4">
+                <input 
+                    v-model="searchQuery" 
+                    type="text" 
+                    placeholder="Search courses, materials, assignments..." 
+                    class="w-147 h-14 rounded-[28px] border-1 p-2 px-8"
+                    @keyup.enter="performSearch(searchQuery)"
+                >
+                <md-icon-button class="absolute right-4" @click="performSearch(searchQuery)">
                     <md-icon>search</md-icon>
                 </md-icon-button> 
             </div>

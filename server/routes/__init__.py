@@ -11,6 +11,7 @@ from .week import WeekCreateResource, WeekDeletionResource
 from .ai import AskResource, QuestionHintResource, SummarizeResource
 from .assignment_scores import AssignmentScoresResource, AllAssignmentScoresResource
 from .material_doubts import MaterialDoubtCreateResource, MaterialDoubtsResource, AllMaterialDoubtsResource, StudentDoubtsResource
+from .search import SearchResource
 
 
 def init_routes(app):
@@ -75,3 +76,6 @@ def init_routes(app):
     api.add_resource(AskResource, '/ask')
     api.add_resource(QuestionHintResource, '/question_hint')
     api.add_resource(SummarizeResource, '/summarize')
+    
+    # Search Route
+    api.add_resource(SearchResource, '/search')

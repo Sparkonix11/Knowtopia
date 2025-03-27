@@ -9,4 +9,5 @@ class Assignment(db.Model):
     created_at = db.Column(db.DateTime, default=func.now())  
     due_date = db.Column(db.DateTime, nullable=True)
     week_id = db.Column(db.Integer, db.ForeignKey("week.id"), nullable=False)
+    week = db.relationship("Week", backref="assignments")
     questions = db.relationship("Question", backref="question", cascade="all, delete-orphan")

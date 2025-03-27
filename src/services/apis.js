@@ -60,6 +60,10 @@ export const aiEndpoints = {
     SUMMARIZE: `${API_URL}/summarize`,
 };
 
+export const searchEndpoints = {
+    SEARCH: `${API_URL}/search`,
+};
+
 export const materialDoubtEndpoints = {
     CREATE_DOUBT: (materialId) => `${API_URL}/material/${materialId}/doubt`,
     MATERIAL_DOUBTS: (materialId) => `${API_URL}/material/${materialId}/doubts`,
