@@ -13,6 +13,8 @@ import InstructorEnrollStudentsView from "@/views/InstructorEnrollStudentsView.v
 import CreateAssignmentView from "@/views/CreateAssignmentView.vue";
 import AssignmentsView from "@/views/AssignmentsView.vue";
 import SearchResultsView from "@/views/SearchResultsView.vue";
+import StudentEnrollmentRequestView from "@/views/StudentEnrollmentRequestView.vue";
+import InstructorEnrollmentRequestsView from "@/views/InstructorEnrollmentRequestsView.vue";
 
 const router = createRouter({
     history: createWebHistory(),
@@ -90,6 +92,16 @@ const router = createRouter({
             path: '/search',
             name: 'SearchResults',
             component: SearchResultsView
+        },
+        {
+            path: '/enrollment-request',
+            name: 'StudentEnrollmentRequest',
+            component: StudentEnrollmentRequestView
+        },
+        {
+            path: '/instructor-enrollment-requests',
+            name: 'InstructorEnrollmentRequests',
+            component: InstructorEnrollmentRequestsView
         }
     ]
 });

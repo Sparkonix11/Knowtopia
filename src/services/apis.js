@@ -27,6 +27,13 @@ export const courseEndpoints = {
     SINGLE_COURSE: (courseId) => `${API_URL}/course/${courseId}`,
 };
 
+export const enrollmentRequestEndpoints = {
+    CREATE_REQUEST: `${API_URL}/enrollment-request`,
+    STUDENT_REQUESTS: `${API_URL}/enrollment-request/student`,
+    INSTRUCTOR_REQUESTS: `${API_URL}/enrollment-request/instructor`,
+    REQUEST_ACTION: (requestId) => `${API_URL}/enrollment-request/${requestId}/action`,
+};
+
 export const materialEndpoints = {
     CREATE_MATERIAL: (weekId) => `${API_URL}/material/create/${weekId}`,
     DELETE_MATERIAL: (materialId) => `${API_URL}/material/delete/${materialId}`,

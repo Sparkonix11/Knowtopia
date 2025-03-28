@@ -12,6 +12,7 @@ from .course import Course
 from .enrollment import Enrollment
 from .score import Score
 from .material_doubt import MaterialDoubt
+from .enrollment_request import EnrollmentRequest
 
 def init_db(app):
     # Flask-Migrate will handle database creation and migrations

@@ -12,6 +12,7 @@ from .ai import AskResource, QuestionHintResource, SummarizeResource
 from .assignment_scores import AssignmentScoresResource, AllAssignmentScoresResource
 from .material_doubts import MaterialDoubtCreateResource, MaterialDoubtsResource, AllMaterialDoubtsResource, StudentDoubtsResource
 from .search import SearchResource
+from .enrollment_request import EnrollmentRequestResource, StudentEnrollmentRequestsResource, InstructorEnrollmentRequestsResource, EnrollmentRequestActionResource
 
 
 def init_routes(app):
@@ -79,3 +80,9 @@ def init_routes(app):
     
     # Search Route
     api.add_resource(SearchResource, '/search')
+
+    # Enrollment Request routes
+    api.add_resource(EnrollmentRequestResource, '/enrollment-request')
+    api.add_resource(StudentEnrollmentRequestsResource, '/enrollment-request/student')
+    api.add_resource(InstructorEnrollmentRequestsResource, '/enrollment-request/instructor')
+    api.add_resource(EnrollmentRequestActionResource, '/enrollment-request/<int:request_id>/action')
