@@ -22,7 +22,7 @@ const props = defineProps({
   }
 });
 
-const emit = defineEmits(['select-material', 'edit-lecture', 'edit-sublecture']);
+const emit = defineEmits(['select-material', 'edit-lecture', 'edit-sublecture', 'delete-lecture', 'delete-sublecture']);
 
 const openLectures = ref({});
 const isInstructor = computed(() => store.getters['user/currentUser']?.is_instructor);
@@ -43,6 +43,20 @@ const editLecture = (lectureId, event) => {
 const editSubLecture = (materialId, weekId, event) => {
   event.stopPropagation();
   emit('edit-sublecture', materialId, weekId);
+};
+
+const deleteLecture = (lectureId, event) => {
+  event.stopPropagation();
+  if (confirm('Are you sure you want to delete this lecture? This action cannot be undone.')) {
+    emit('delete-lecture', lectureId);
+  }
+};
+
+const deleteSubLecture = (materialId, weekId, event) => {
+  event.stopPropagation();
+  if (confirm('Are you sure you want to delete this content? This action cannot be undone.')) {
+    emit('delete-sublecture', materialId, weekId);
+  }
 };
 </script>
 <template>
@@ -66,6 +80,9 @@ const editSubLecture = (materialId, weekId, event) => {
                     <div slot="end" class="flex gap-2 items-center">
                         <md-icon-button v-if="isInstructor" @click="editLecture(lecture.id, $event)" class="text-(--md-sys-color-on-secondary-container)">
                             <md-icon>edit</md-icon>
+                        </md-icon-button>
+                        <md-icon-button v-if="isInstructor" @click="deleteLecture(lecture.id, $event)" class="text-(--md-sys-color-error)">
+                            <md-icon>delete</md-icon>
                         </md-icon-button>
                         <md-icon>{{ openLectures[lecture.name] ? 'expand_less' : 'expand_more' }}</md-icon>
                     </div>
@@ -97,14 +114,21 @@ const editSubLecture = (materialId, weekId, event) => {
                             <span>{{ typeof subLecture === 'string' ? subLecture : subLecture.name }}</span>
                             <span v-if="typeof subLecture === 'object' && subLecture.isAssignment" class="text-xs ml-auto font-medium">Assignment</span>
                             
-                            <!-- Edit button for instructors -->
-                            <md-icon-button 
-                                v-if="isInstructor && typeof subLecture === 'object' && subLecture.id" 
-                                @click="editSubLecture(subLecture.id, lecture.id, $event)" 
-                                class="ml-auto text-(--md-sys-color-on-surface-variant)"
-                            >
-                                <md-icon>edit</md-icon>
-                            </md-icon-button>
+                            <!-- Edit and delete buttons for instructors -->
+                            <div v-if="isInstructor && typeof subLecture === 'object' && subLecture.id" class="ml-auto flex gap-1">
+                                <md-icon-button 
+                                    @click="editSubLecture(subLecture.id, lecture.id, $event)" 
+                                    class="text-(--md-sys-color-on-surface-variant)"
+                                >
+                                    <md-icon>edit</md-icon>
+                                </md-icon-button>
+                                <md-icon-button 
+                                    @click="deleteSubLecture(subLecture.id, lecture.id, $event)" 
+                                    class="text-(--md-sys-color-error)"
+                                >
+                                    <md-icon>delete</md-icon>
+                                </md-icon-button>
+                            </div>
                         </div>
                     </md-list-item>
                 </div>

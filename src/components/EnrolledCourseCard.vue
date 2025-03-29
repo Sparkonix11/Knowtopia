@@ -12,13 +12,18 @@ const props = defineProps({
     }
 });
 
-const emit = defineEmits(['editCourse']);
+const emit = defineEmits(['editCourse', 'deleteCourse']);
 
 const image = props.thumbnail ? `../../server${props.thumbnail}` : '../../src/assets/resource_placeholder.png';
 
 const handleEditClick = (event) => {
     event.preventDefault(); // Prevent navigation from router-link
     emit('editCourse', props.courseId);
+};
+
+const handleDeleteClick = (event) => {
+    event.preventDefault(); // Prevent navigation from router-link
+    emit('deleteCourse', props.courseId);
 };
 </script>
 <template>
@@ -40,9 +45,12 @@ const handleEditClick = (event) => {
             <md-linear-progress :value="progress" class="w-75"></md-linear-progress>
         </div>
         
-        <div v-if="isInstructor" class="ml-4 mr-2">
+        <div v-if="isInstructor" class="ml-4 mr-2 flex">
             <md-icon-button @click="handleEditClick">
                 <md-icon>edit</md-icon>
+            </md-icon-button>
+            <md-icon-button @click="handleDeleteClick">
+                <md-icon>delete</md-icon>
             </md-icon-button>
         </div>
     </div>

@@ -1,5 +1,6 @@
 import { ref, computed, onMounted } from "vue";
 import { useStore } from "vuex";
+import { deleteCourseAPI } from "../services/operations/courseAPI";
 
 export function useInstructorCourses() {
   const store = useStore();
@@ -52,6 +53,30 @@ export function useInstructorCourses() {
     await fetchInstructorCourses();
   });
   
+  // Delete a course
+  const deleteCourse = async (courseId) => {
+    isLoading.value = true;
+    error.value = null;
+    
+    try {
+      const response = await deleteCourseAPI(courseId);
+      
+      if (response.status === 200) {
+        // Refresh the courses list after successful deletion
+        await fetchInstructorCourses();
+        return { success: true, message: "Course deleted successfully" };
+      } else {
+        error.value = response.data?.message || "Failed to delete course";
+        return { success: false, message: error.value };
+      }
+    } catch (err) {
+      error.value = err.message || "An unexpected error occurred";
+      return { success: false, message: error.value };
+    } finally {
+      isLoading.value = false;
+    }
+  };
+  
   return {
     // State
     instructorCourses,
@@ -63,6 +88,7 @@ export function useInstructorCourses() {
     // Methods
     fetchInstructorCourses,
     toggleCreateCourse,
-    toggleCreateLecture
+    toggleCreateLecture,
+    deleteCourse
   };
 }

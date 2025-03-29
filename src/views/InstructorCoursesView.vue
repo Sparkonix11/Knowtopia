@@ -5,6 +5,7 @@ import CreateCourseView from './CreateCourseView.vue';
 import CreateLecturesView from './CreateLecturesView.vue';
 import { useInstructorCourses } from '../handlers/useInstructorCourses';
 import { useRouter } from 'vue-router';
+import { ref } from 'vue';
 
 const router = useRouter();
 
@@ -16,12 +17,51 @@ const {
   showCreateLecture,
   fetchInstructorCourses,
   toggleCreateCourse,
-  toggleCreateLecture
+  toggleCreateLecture,
+  deleteCourse
 } = useInstructorCourses();
+
+// Confirmation dialog state
+const showDeleteConfirmation = ref(false);
+const courseToDelete = ref(null);
+const deleteMessage = ref('');
 
 // Function to navigate to edit course page
 const navigateToEditCourse = (courseId) => {
   router.push({ name: 'EditCourse', params: { id: courseId } });
+};
+
+// Function to show delete confirmation dialog
+const confirmDeleteCourse = (courseId) => {
+  // Find the course name for better UX in confirmation message
+  const course = instructorCourses.value.find(c => c.id === courseId);
+  courseToDelete.value = courseId;
+  deleteMessage.value = '';
+  showDeleteConfirmation.value = true;
+};
+
+// Function to handle course deletion
+const handleDeleteCourse = async () => {
+  if (!courseToDelete.value) return;
+  
+  const result = await deleteCourse(courseToDelete.value);
+  deleteMessage.value = result.message;
+  
+  if (result.success) {
+    // Close the dialog after successful deletion
+    setTimeout(() => {
+      showDeleteConfirmation.value = false;
+      courseToDelete.value = null;
+      deleteMessage.value = '';
+    }, 1500);
+  }
+};
+
+// Function to cancel deletion
+const cancelDeleteCourse = () => {
+  showDeleteConfirmation.value = false;
+  courseToDelete.value = null;
+  deleteMessage.value = '';
 };
 </script>
 
@@ -68,6 +108,7 @@ const navigateToEditCourse = (courseId) => {
                         :progress="course.progress || 0.6"
                         :isInstructor="true"
                         @editCourse="navigateToEditCourse"
+                        @deleteCourse="confirmDeleteCourse"
                     />
                 </template>
                 
@@ -93,6 +134,23 @@ const navigateToEditCourse = (courseId) => {
         v-if="showCreateLecture" 
         @toggleCreateLecture="toggleCreateLecture" 
     />
+    
+    <!-- Delete Confirmation Dialog -->
+    <div v-if="showDeleteConfirmation" class="fixed inset-0 bg-transparent bg-opacity-30 backdrop-blur-sm flex items-center justify-center z-50">
+        <div class="bg-(--md-sys-color-surface) p-6 rounded-lg shadow-lg max-w-md w-full">
+            <h3 class="text-xl font-semibold mb-4">Confirm Deletion</h3>
+            <p class="mb-6">Are you sure you want to delete this course? This action cannot be undone.</p>
+            
+            <div v-if="deleteMessage" class="mb-4 p-2 rounded" :class="{'bg-green-100 text-green-800': deleteMessage.includes('success'), 'bg-red-100 text-red-800': !deleteMessage.includes('success')}">
+                {{ deleteMessage }}
+            </div>
+            
+            <div class="flex justify-end gap-3">
+                <md-text-button @click="cancelDeleteCourse">Cancel</md-text-button>
+                <md-filled-button @click="handleDeleteCourse" class="bg-red-600">Delete</md-filled-button>
+            </div>
+        </div>
+    </div>
 </template>
   <script>
 const lecturedata = {

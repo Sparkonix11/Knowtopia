@@ -6,7 +6,7 @@ import placeholder from '@/assets/placeholder.mp4';
 import WriteReview from '@/components/WriteReview.vue';
 import Summaries from '@/components/Summaries.vue';
 import QuestionCard from '@/components/QuestionCard.vue';
-image.pngimport EditLecturePopup from '@/components/EditLecturePopup.vue';
+import EditLecturePopup from '@/components/EditLecturePopup.vue';
 import EditSubLecturePopup from '@/components/EditSubLecturePopup.vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useStore } from 'vuex';
@@ -14,6 +14,8 @@ import axios from 'axios';
 
 import { ref, onMounted, computed } from "vue";
 import { getInstructorCoursesAPI, getEnrolledCoursesAPI, getSingleCourseAPI } from '@/services/operations/courseAPI';
+import { deleteWeekAPI } from '@/services/operations/weekAPI';
+import { deleteMaterialAPI } from '@/services/operations/materialAPI';
 import { useAssignment } from '@/handlers/useAssignment';
 import { apiConnector } from '@/services/apiConnector';
 import { questionEndpoints } from '@/services/apis';
@@ -283,30 +285,79 @@ const openEditSubLecture = (materialId, weekId) => {
 
 const closeEditSubLecture = () => {
     showEditSubLecture.value = false;
-    // Refresh course data after editing
+    refreshCourseData();
+};
+
+// Delete lecture functionality
+const deleteLecture = async (lectureId) => {
+    if (!courseData.value?.id) return;
+    
+    isLoading.value = true;
+    error.value = null;
+    
+    try {
+        const response = await deleteWeekAPI(courseData.value.id, lectureId);
+        
+        if (response && response.status === 200) {
+            // Refresh course data after successful deletion
+            await refreshCourseData();
+        } else {
+            throw new Error(response?.data?.message || "Failed to delete lecture");
+        }
+    } catch (err) {
+        error.value = err.message || "An error occurred while deleting the lecture";
+        console.error("Error deleting lecture:", err);
+    } finally {
+        isLoading.value = false;
+    }
+};
+
+// Delete sub-lecture (material) functionality
+const deleteSubLecture = async (materialId, weekId) => {
+    isLoading.value = true;
+    error.value = null;
+    
+    try {
+        const response = await deleteMaterialAPI(materialId);
+        
+        if (response && response.status === 200) {
+            // Refresh course data after successful deletion
+            await refreshCourseData();
+        } else {
+            throw new Error(response?.data?.message || "Failed to delete content");
+        }
+    } catch (err) {
+        error.value = err.message || "An error occurred while deleting the content";
+        console.error("Error deleting sub-lecture:", err);
+    } finally {
+        isLoading.value = false;
+    }
+};
+
+// Helper function to refresh course data
+const refreshCourseData = async () => {
     if (courseData.value?.id) {
-        getSingleCourseAPI(courseData.value.id).then(response => {
-            if (response.status === 200) {
-                courseData.value = response.data.course;
-                // Update lecture data
-                if (courseData.value.weeks && courseData.value.weeks.length > 0) {
-                    lectureData.value.lectures = courseData.value.weeks.map(week => ({
-                        id: week.id,
-                        name: week.name,
-                        subLectures: week.materials ? week.materials.map(material => ({
-                            id: material.material_id,
-                            name: material.material_name,
-                            description: material.description,
-                            type: material.isAssignment ? 'assignment' : (material.type || 'video'),
-                            url: material.file_path ? `../../server${material.file_path}` : null,
-                            duration: material.duration,
-                            isAssignment: material.isAssignment || material.type === 'assignment',
-                            assignment_id: material.isAssignment ? material.assignment_id : null
-                        })) : []
-                    }));
-                }
+        const response = await getSingleCourseAPI(courseData.value.id);
+        if (response.status === 200) {
+            courseData.value = response.data.course;
+            // Update lecture data
+            if (courseData.value.weeks && courseData.value.weeks.length > 0) {
+                lectureData.value.lectures = courseData.value.weeks.map(week => ({
+                    id: week.id,
+                    name: week.name,
+                    subLectures: week.materials ? week.materials.map(material => ({
+                        id: material.material_id,
+                        name: material.material_name,
+                        description: material.description,
+                        type: material.isAssignment ? 'assignment' : (material.type || 'video'),
+                        url: material.file_path ? `../../server${material.file_path}` : null,
+                        duration: material.duration,
+                        isAssignment: material.isAssignment || material.type === 'assignment',
+                        assignment_id: material.isAssignment ? material.assignment_id : null
+                    })) : []
+                }));
             }
-        });
+        }
     }
 };
 
@@ -339,6 +390,8 @@ const getFileType = (url) => {
             @select-material="selectMaterial"
             @edit-lecture="openEditLecture"
             @edit-sublecture="openEditSubLecture"
+            @delete-lecture="deleteLecture"
+            @delete-sublecture="deleteSubLecture"
             class="top-20 left-14"
         />
         
