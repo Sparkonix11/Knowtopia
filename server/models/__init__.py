@@ -15,6 +15,5 @@ from .material_doubt import MaterialDoubt
 from .enrollment_request import EnrollmentRequest
 
 def init_db(app):
-    # Flask-Migrate will handle database creation and migrations
-    # This function is kept for backward compatibility
-    pass
+    with app.app_context():
+        db.create_all()

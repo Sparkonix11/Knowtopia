@@ -168,7 +168,7 @@ const handleEditSubLecture = async () => {
                     <p v-if="formErrors.title" class="text-red-500 text-sm mt-1 ml-2">{{ formErrors.title }}</p>
                 </div>
                 
-                <div class="w-full">
+                <!-- <div class="w-full">
                     <md-outlined-text-field 
                         class="w-full" 
                         type="textarea" 
@@ -178,9 +178,9 @@ const handleEditSubLecture = async () => {
                         @input="updateDescription" 
                         :value="description"
                     ></md-outlined-text-field>
-                </div>
+                </div> -->
 
-                <div class="flex flex-col items-start gap-2 w-full">
+                <!-- <div class="flex flex-col items-start gap-2 w-full">
                     <label class="text-gray-700 font-medium">Material File (Optional)</label>
                     <div @click="openFileSelector" class="relative w-full h-75 bg-(--md-sys-color-primary-container) border border-(--md-sys-color-outline) rounded-[16px] flex items-center justify-center cursor-pointer hover:bg-(--md-sys-color-secondary-container) transition-all">
                         <div v-if="filePreviewUrl" class="absolute inset-0 w-full h-full flex items-center justify-center rounded-[16px] p-4">
@@ -214,13 +214,14 @@ const handleEditSubLecture = async () => {
                     </div>
                     <input ref="transcriptInputRef" type="file" class="hidden" @change="selectTranscript" />
                     <p v-if="formErrors.transcript" class="text-red-500 text-sm mt-1 ml-2">{{ formErrors.transcript }}</p>
-                </div>
+                </div> -->
 
                 <div class="flex justify-end w-full gap-2">
                     <md-text-button @click="closePopup">Cancel</md-text-button>
                     <md-filled-button 
                         @click="handleEditSubLecture" 
                         :disabled="isLoading || !isFormValid"
+                        class="w-20 h-12"
                     > 
                         {{ isLoading ? "Saving..." : "Save" }}
                     </md-filled-button>

@@ -142,7 +142,7 @@ const handleEditLecture = async () => {
                     <p v-if="formErrors.name" class="text-red-500 text-sm mt-1 ml-2">{{ formErrors.name }}</p>
                 </div>
                 
-                <div class="w-full">
+                <!-- <div class="w-full">
                     <md-outlined-text-field 
                         class="w-full" 
                         type="textarea" 
@@ -154,11 +154,12 @@ const handleEditLecture = async () => {
                         :error="!!formErrors.description"
                     ></md-outlined-text-field>
                     <p v-if="formErrors.description" class="text-red-500 text-sm mt-1 ml-2">{{ formErrors.description }}</p>
-                </div>
+                </div> -->
 
                 <div class="flex justify-end w-full gap-2">
                     <md-text-button @click="closePopup">Cancel</md-text-button>
-                    <md-filled-button 
+                    <md-filled-button
+                        class="w-20 h-12"
                         @click="handleEditLecture" 
                         :disabled="isLoading || !isFormValid"
                     > 
