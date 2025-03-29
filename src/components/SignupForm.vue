@@ -27,7 +27,7 @@ const {
 </script>
 
 <template>
-    <div class="flex flex-col gap-8 w-md ml-[12%]">
+    <div class="flex flex-col gap-8 w-full max-w-md">
         <!-- User type selector -->
         <div class="flex rounded-full w-60">
             <button
@@ -90,6 +90,7 @@ const {
                 @input="updateEmail"
                 :value="email"
                 :error="!!errors.email"
+                class="w-full"
             ></md-outlined-text-field>
             <div v-if="errors.email" class="text-red-500 text-xs ml-1">{{ errors.email }}</div>
         </div>
@@ -130,6 +131,7 @@ const {
                     @input="updatePassword"
                     :value="password"
                     :error="!!errors.password"
+                    class="w-full"
                 ></md-outlined-text-field>
                 <div v-if="errors.password" class="text-red-500 text-xs ml-1">{{ errors.password }}</div>
             </div>
@@ -141,6 +143,7 @@ const {
                     @input="updateConfirmPassword"
                     :value="confirmPassword"
                     :error="!!errors.confirmPassword"
+                    class="w-full"
                 ></md-outlined-text-field>
                 <div v-if="errors.confirmPassword" class="text-red-500 text-xs ml-1">{{ errors.confirmPassword }}</div>
             </div>

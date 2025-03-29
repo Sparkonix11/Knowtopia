@@ -201,7 +201,7 @@ onMounted(async () => {
 
 <template>
 <BaseLayout>
-        <div class="w-[80%] h-fit px-12 py-18 bg-(--md-sys-color-surface) border border-(--md-sys-color-outline-variant) rounded-[12px] m-auto flex flex-col gap-6">
+        <div class="w-full h-fit px-12 py-18 bg-(--md-sys-color-surface) border border-(--md-sys-color-outline-variant) rounded-[12px] m-auto flex flex-col gap-6">
             <div class="text-center">
                 <span class="text-3xl">Reviews</span>
             </div>

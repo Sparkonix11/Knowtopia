@@ -6,8 +6,9 @@ import logo from '@/assets/logo.png';
 
 <template>
     <div class="navbar flex w-full items-center justify-around h-20 bg-(--md-sys-color-surface-container)">
-        <div class="flex-1 flex justify-center items-center">
+        <div class="flex-1 flex justify-center items-center gap-2">
             <img :src="logo" alt="" class="w-20 h-20 rounded-full ">
+            <span style="font-family: 'Lobster';" class="text-2xl text-(--md-sys-color-primary)">Knowtopia</span>
         </div>
         <div class="flex-1"></div>
         <!-- <div class="relative flex items-center">

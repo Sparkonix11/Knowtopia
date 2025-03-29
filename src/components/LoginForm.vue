@@ -16,7 +16,7 @@ const {
 </script>
 
 <template>
-    <div class="flex flex-col gap-8 w-md ml-[12%]">
+    <div class="flex flex-col gap-8 w-full max-w-md">
         <!-- Global error message -->
         <div v-if="errorMessage" class="text-red-500 text-sm font-medium">{{ errorMessage }}</div>
 
@@ -29,6 +29,7 @@ const {
                 type="email"
                 :value="email"
                 :error="!!errors.email"
+                class="w-full"
             ></md-outlined-text-field>
             <div v-if="errors.email" class="text-red-500 text-xs ml-1">{{ errors.email }}</div>
         </div>
@@ -42,6 +43,7 @@ const {
                 type="password"
                 :value="password"
                 :error="!!errors.password"
+                class="w-full"
             ></md-outlined-text-field>
             <div v-if="errors.password" class="text-red-500 text-xs ml-1">{{ errors.password }}</div>
         </div>

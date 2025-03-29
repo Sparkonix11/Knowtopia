@@ -147,8 +147,7 @@ const cancelForm = () => {
           <div class="mb-6">
             <div class="flex justify-between items-center mb-4">
               <h2 class="text-xl font-semibold">Questions</h2>
-              <md-filled-button type="button" @click="addQuestion">
-                <md-icon>add</md-icon>
+              <md-filled-button type="button" @click="addQuestion" class="w-34 h-12">
                 Add Question
               </md-filled-button>
             </div>
@@ -210,8 +209,8 @@ const cancelForm = () => {
           
           <!-- Form Actions -->
           <div class="flex justify-end space-x-4">
-            <md-outlined-button type="button" @click="cancelForm">Cancel</md-outlined-button>
-            <md-filled-button type="submit" :disabled="isLoading">
+            <md-outlined-button type="button" @click="cancelForm" class="w-24 h-12">Cancel</md-outlined-button>
+            <md-filled-button type="submit" :disabled="isLoading" class="w-40 h-12">
               <md-circular-progress v-if="isLoading" indeterminate></md-circular-progress>
               <span v-else>Create Assignment</span>
             </md-filled-button>

@@ -12,6 +12,7 @@
     "serve:flask": "cd server && call myenv\\Scripts\\activate && python app.py"
   },
   "dependencies": {
+    "@lottiefiles/dotlottie-vue": "^0.6.0",
     "@material/web": "^2.2.0",
     "@tailwindcss/vite": "^4.0.1",
     "axios": "^1.7.9",

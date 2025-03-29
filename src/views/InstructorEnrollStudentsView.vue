@@ -181,6 +181,7 @@ async function enrollStudent(studentId) {
                   <md-filled-button 
                     @click="enrollStudent(student.id)"
                     :disabled="isLoading"
+                    class="w-24 h-12"
                   >
                     Enroll
                   </md-filled-button>

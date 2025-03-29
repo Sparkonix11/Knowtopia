@@ -58,9 +58,10 @@ const toggleNotif = () => {
 
 <template>
     <div class="navbar flex w-full items-center justify-between px-30 h-20 bg-(--md-sys-color-surface-container) shadow-md">
-        <div class="flex-1 flex justify-start items-center pl-20 ">
-            <router-link :to="{ name: user?.is_instructor ? 'InstructorDashboard' : 'StudentDashboard' }">
+        <div class="flex-1 pl-20">
+            <router-link :to="{ name: user?.is_instructor ? 'InstructorDashboard' : 'StudentDashboard' }" class="flex-1 flex justify-start items-center pl-20 gap-2">
                 <img :src="logo" alt="" class="w-20 h-20 rounded-full cursor-pointer">
+                <span style="font-family: 'Lobster';" class="text-2xl text-(--md-sys-color-primary)">Knowtopia</span>
             </router-link>
         </div>
 

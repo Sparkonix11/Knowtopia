@@ -93,24 +93,28 @@ function getStatusBadgeClass(status) {
       <md-filled-button 
         :class="selectedFilter === 'all' ? 'bg-(--md-sys-color-primary)' : 'bg-(--md-sys-color-surface-variant)'" 
         @click="selectedFilter = 'all'"
+        class="w-30 h-12"
       >
         All Requests
       </md-filled-button>
       <md-filled-button 
         :class="selectedFilter === 'pending' ? 'bg-(--md-sys-color-primary)' : 'bg-(--md-sys-color-surface-variant)'" 
         @click="selectedFilter = 'pending'"
+        class="w-24 h-12"
       >
         Pending
       </md-filled-button>
       <md-filled-button 
         :class="selectedFilter === 'approved' ? 'bg-(--md-sys-color-primary)' : 'bg-(--md-sys-color-surface-variant)'" 
         @click="selectedFilter = 'approved'"
+        class="w-24 h-12"
       >
         Approved
       </md-filled-button>
       <md-filled-button 
         :class="selectedFilter === 'rejected' ? 'bg-(--md-sys-color-primary)' : 'bg-(--md-sys-color-surface-variant)'" 
         @click="selectedFilter = 'rejected'"
+        class="w-24 h-12"
       >
         Rejected
       </md-filled-button>
@@ -146,7 +150,7 @@ function getStatusBadgeClass(status) {
               <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Message</th>
               <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Status</th>
               <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Date</th>
-              <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Actions</th>
+              <th class="px-6 py-3 text-center text-xs font-medium uppercase tracking-wider">Actions</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-(--md-sys-color-outline)">
@@ -168,20 +172,22 @@ function getStatusBadgeClass(status) {
                 {{ new Date(request.created_at).toLocaleDateString() }}
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                <div class="flex space-x-2">
+                <div class="flex space-x-2 justify-center">
                   <md-filled-button 
                     v-if="request.status === 'pending'"
-                    class="bg-green-600" 
+                    class="bg-green-600 w-24 h-12" 
                     @click="handleRequestAction(request.id, 'approve')"
                     :disabled="isLoading"
                   >
                     Approve
                   </md-filled-button>
                   <md-filled-button 
+                  
                     v-if="request.status === 'pending'"
-                    class="bg-red-600" 
+                    class="bg-red-600 w-24 h-12" 
                     @click="handleRequestAction(request.id, 'reject')"
                     :disabled="isLoading"
+                    
                   >
                     Reject
                   </md-filled-button>

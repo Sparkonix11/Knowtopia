@@ -158,12 +158,14 @@ function getStatusBadgeClass(status) {
     
     <div class="w-[90%] flex space-x-4 mb-6">
       <md-filled-button 
+        class="w-40 h-12"
         :class="showRequestForm ? 'bg-(--md-sys-color-primary)' : 'bg-(--md-sys-color-surface-variant)'" 
         @click="toggleView('form')"
       >
         Request Enrollment
       </md-filled-button>
       <md-filled-button 
+        class="w-40 h-12"
         :class="showRequestHistory ? 'bg-(--md-sys-color-primary)' : 'bg-(--md-sys-color-surface-variant)'" 
         @click="toggleView('history')"
       >
