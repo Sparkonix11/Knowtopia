@@ -215,7 +215,7 @@ function getStatusBadgeClass(status) {
       </div>
       
       <div class="flex justify-end">
-        <md-filled-button @click="submitEnrollmentRequest" :disabled="isLoading || !selectedCourseId">
+        <md-filled-button class="w-34 h-12" @click="submitEnrollmentRequest" :disabled="isLoading || !selectedCourseId">
           Submit Request
         </md-filled-button>
       </div>

@@ -46,6 +46,7 @@ export function useCreateMaterial() {
     
     return {
         createMaterial,
-        error
+        error,
+        isLoading
     };
 }

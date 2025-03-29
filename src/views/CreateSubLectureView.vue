@@ -108,9 +108,18 @@ const handleCreateMaterial = async () => {
     }
 
     if (isNameValid && isDurationValid) {
-        const response = await createMaterial(name.value, duration.value, selectedFile.value);
-        if (response) {
-            toggleCreateSubLecture();
+        // Check file size to provide appropriate feedback
+        const fileSizeMB = selectedFile.value.size / (1024 * 1024);
+        const isLargeFile = fileSizeMB > 10; // Consider files larger than 10MB as large
+        
+        try {
+            const response = await createMaterial(name.value, duration.value, selectedFile.value);
+            if (response) {
+                toggleCreateSubLecture();
+            }
+        } catch (err) {
+            // Error handling is already done in the useCreateMaterial hook
+            console.error("Error creating material:", err);
         }
     }
 };
@@ -126,7 +135,15 @@ const handleCreateMaterial = async () => {
                 </md-icon-button>
             </div>
             
-            <div class="flex flex-col gap-10 h-full justify-center items-center">
+            <div class="flex flex-col gap-10 h-full justify-center items-center relative">
+                <!-- Loading overlay -->
+                <div v-if="isLoading" class="absolute inset-0 bg-transparent bg-opacity-50 flex items-center justify-center z-10 rounded-[12px]">
+                    <div class="bg-white p-6 rounded-lg flex flex-col items-center">
+                        <md-circular-progress indeterminate class="h-10 w-10 mb-4"></md-circular-progress>
+                        <p class="text-lg font-medium">Processing your content...</p>
+                        <p class="text-sm text-gray-600 mt-2">This may take a moment for video uploads</p>
+                    </div>
+                </div>
                 <h2 class="text-2xl font-bold mb-4">Add Lecture Content</h2>
                 
                 <!-- Error message -->
@@ -202,11 +219,14 @@ const handleCreateMaterial = async () => {
 
                 <div class="flex justify-end w-200 mt-4">
                     <md-filled-button 
-                        class="w-30 h-12" 
+                        class="w-40 h-12" 
                         @click="handleCreateMaterial"
                         :disabled="isLoading || !isFormValid"
                     > 
-                        {{ isLoading ? "Saving..." : "Save" }}
+                        <div class="flex items-center gap-2">
+                            <md-circular-progress v-if="isLoading" indeterminate class="h-5 w-5"></md-circular-progress>
+                            <span>{{ isLoading ? "Uploading Content..." : "Save" }}</span>
+                        </div>
                     </md-filled-button>
                 </div>
             </div>

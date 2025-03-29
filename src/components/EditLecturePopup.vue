@@ -23,10 +23,8 @@ const emit = defineEmits(["close"]);
 const { editCourse, isLoading, error } = useEditCourse();
 
 const name = ref("");
-const description = ref("");
 const formErrors = ref({
     name: "",
-    description: ""
 });
 
 // Fetch lecture data when component is mounted
@@ -38,7 +36,6 @@ onMounted(async () => {
             if (response && response.status === 200) {
                 const lecture = response.data.week;
                 name.value = lecture.name;
-                description.value = lecture.description || "";
             }
         } catch (err) {
             console.error("Error fetching lecture data:", err);
@@ -49,9 +46,7 @@ onMounted(async () => {
 // Form validation
 const isFormValid = computed(() => {
     return name.value.trim() !== "" && 
-           description.value.trim() !== "" && 
-           !formErrors.value.name && 
-           !formErrors.value.description;
+           !formErrors.value.name
 });
 
 const validateName = () => {
@@ -67,27 +62,9 @@ const validateName = () => {
     }
 };
 
-const validateDescription = () => {
-    if (!description.value.trim()) {
-        formErrors.value.description = "Description is required";
-        return false;
-    } else if (description.value.length < 10) {
-        formErrors.value.description = "Description must be at least 10 characters";
-        return false;
-    } else {
-        formErrors.value.description = "";
-        return true;
-    }
-};
-
 const updateName = (event) => {
     name.value = event.target.value;
     validateName();
-};
-
-const updateDescription = (event) => {
-    description.value = event.target.value;
-    validateDescription();
 };
 
 const closePopup = () => {
@@ -97,13 +74,11 @@ const closePopup = () => {
 const handleEditLecture = async () => {
     // Validate all fields before submission
     const isNameValid = validateName();
-    const isDescriptionValid = validateDescription();
     
-    if (isNameValid && isDescriptionValid) {
+    if (isNameValid) {
         // Update lecture - using FormData instead of JSON
         const formData = new FormData();
         formData.append('name', name.value);
-        formData.append('description', description.value);
         
         const response = await apiConnector('PUT', `http://127.0.0.1:5000/api/v1/week/edit/${props.courseId}/${props.lectureId}`, formData);
         
@@ -142,19 +117,6 @@ const handleEditLecture = async () => {
                     <p v-if="formErrors.name" class="text-red-500 text-sm mt-1 ml-2">{{ formErrors.name }}</p>
                 </div>
                 
-                <!-- <div class="w-full">
-                    <md-outlined-text-field 
-                        class="w-full" 
-                        type="textarea" 
-                        label="Description" 
-                        placeholder="Enter Description" 
-                        rows="3"  
-                        @input="updateDescription" 
-                        :value="description"
-                        :error="!!formErrors.description"
-                    ></md-outlined-text-field>
-                    <p v-if="formErrors.description" class="text-red-500 text-sm mt-1 ml-2">{{ formErrors.description }}</p>
-                </div> -->
 
                 <div class="flex justify-end w-full gap-2">
                     <md-text-button @click="closePopup">Cancel</md-text-button>

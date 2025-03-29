@@ -489,7 +489,6 @@ const getFileType = (url) => {
                                 :disabled="isSubmitting || submissionSuccess"
                                 class="px-8"
                             >
-                                <md-icon v-if="!isSubmitting" class="mr-2">send</md-icon>
                                 <md-circular-progress v-if="isSubmitting" indeterminate class="mr-2"></md-circular-progress>
                                 {{ isSubmitting ? 'Submitting...' : 'Submit Assignment' }}
                             </md-filled-button>
