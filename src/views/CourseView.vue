@@ -6,6 +6,8 @@ import placeholder from '@/assets/placeholder.mp4';
 import WriteReview from '@/components/WriteReview.vue';
 import Summaries from '@/components/Summaries.vue';
 import QuestionCard from '@/components/QuestionCard.vue';
+image.pngimport EditLecturePopup from '@/components/EditLecturePopup.vue';
+import EditSubLecturePopup from '@/components/EditSubLecturePopup.vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useStore } from 'vuex';
 import axios from 'axios';
@@ -24,12 +26,17 @@ const store = useStore();
 
 const showWriteReview = ref(false);
 const showSummaries = ref(false);
+const showEditLecture = ref(false);
+const showEditSubLecture = ref(false);
 const isLoading = ref(false);
 const error = ref(null);
 const courseData = ref(null);
 const lectureData = ref({ lectures: [] });
 const isInstructor = computed(() => store.getters['user/getUser']?.role === 'instructor');
 const currentMaterial = ref(null);
+const currentLectureId = ref(null);
+const currentSubLectureId = ref(null);
+const currentWeekId = ref(null);
 
 // Initialize the assignment handler
 const {
@@ -234,6 +241,75 @@ const toggleSummaries = () => {
     showSummaries.value = !showSummaries.value;
 };
 
+const openEditLecture = (lectureId) => {
+    currentLectureId.value = lectureId;
+    showEditLecture.value = true;
+};
+
+const closeEditLecture = () => {
+    showEditLecture.value = false;
+    // Refresh course data after editing
+    if (courseData.value?.id) {
+        getSingleCourseAPI(courseData.value.id).then(response => {
+            if (response.status === 200) {
+                courseData.value = response.data.course;
+                // Update lecture data
+                if (courseData.value.weeks && courseData.value.weeks.length > 0) {
+                    lectureData.value.lectures = courseData.value.weeks.map(week => ({
+                        id: week.id,
+                        name: week.name,
+                        subLectures: week.materials ? week.materials.map(material => ({
+                            id: material.material_id,
+                            name: material.material_name,
+                            description: material.description,
+                            type: material.isAssignment ? 'assignment' : (material.type || 'video'),
+                            url: material.file_path ? `../../server${material.file_path}` : null,
+                            duration: material.duration,
+                            isAssignment: material.isAssignment || material.type === 'assignment',
+                            assignment_id: material.isAssignment ? material.assignment_id : null
+                        })) : []
+                    }));
+                }
+            }
+        });
+    }
+};
+
+const openEditSubLecture = (materialId, weekId) => {
+    currentSubLectureId.value = materialId;
+    currentWeekId.value = weekId;
+    showEditSubLecture.value = true;
+};
+
+const closeEditSubLecture = () => {
+    showEditSubLecture.value = false;
+    // Refresh course data after editing
+    if (courseData.value?.id) {
+        getSingleCourseAPI(courseData.value.id).then(response => {
+            if (response.status === 200) {
+                courseData.value = response.data.course;
+                // Update lecture data
+                if (courseData.value.weeks && courseData.value.weeks.length > 0) {
+                    lectureData.value.lectures = courseData.value.weeks.map(week => ({
+                        id: week.id,
+                        name: week.name,
+                        subLectures: week.materials ? week.materials.map(material => ({
+                            id: material.material_id,
+                            name: material.material_name,
+                            description: material.description,
+                            type: material.isAssignment ? 'assignment' : (material.type || 'video'),
+                            url: material.file_path ? `../../server${material.file_path}` : null,
+                            duration: material.duration,
+                            isAssignment: material.isAssignment || material.type === 'assignment',
+                            assignment_id: material.isAssignment ? material.assignment_id : null
+                        })) : []
+                    }));
+                }
+            }
+        });
+    }
+};
+
 const getFileType = (url) => {
   if (!url) return null;
   
@@ -258,7 +334,11 @@ const getFileType = (url) => {
         <!-- Sidebar with real lecture data -->
         <SidebarCourse 
             :lectures="lectureData.lectures" 
+            :courseName="courseData?.name || 'Course'"
+            :courseId="courseData?.id"
             @select-material="selectMaterial"
+            @edit-lecture="openEditLecture"
+            @edit-sublecture="openEditSubLecture"
             class="top-20 left-14"
         />
         
@@ -394,5 +474,24 @@ const getFileType = (url) => {
 
     <WriteReview v-if="showWriteReview" @toggleWriteReview="toggleWriteReview" :materialId="currentMaterial?.id"/>
     <Summaries v-if="showSummaries" @toggleSummaries="toggleSummaries" :materialId="currentMaterial?.id" />
+    
+    <!-- Edit Lecture Popup -->
+    <EditLecturePopup 
+        v-if="showEditLecture" 
+        :isOpen="showEditLecture"
+        :courseId="courseData?.id"
+        :lectureId="currentLectureId"
+        @close="closeEditLecture"
+    />
+    
+    <!-- Edit SubLecture Popup -->
+    <EditSubLecturePopup 
+        v-if="showEditSubLecture" 
+        :isOpen="showEditSubLecture"
+        :courseId="courseData?.id"
+        :materialId="currentSubLectureId"
+        :weekId="currentWeekId"
+        @close="closeEditSubLecture"
+    />
     
 </template>

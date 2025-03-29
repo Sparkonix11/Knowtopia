@@ -2,12 +2,12 @@ from flask_restful import Api
 from .assignment import AssignmentResource, CreateAssignmentResource, DeleteAssignmentResource
 from .submission import AssignmentSubmissionResource, AssignmentScoreResource
 from .auth import SignupResource, LoginResource, LogoutResource
-from .course import CourseResource, CreateCourseResource, InstructorCoursesResource, DeleteCourseResource, EnrolledCoursesResource, EnrollStudentResource, SingleCourseResource
-from .material import MaterialCreateResource, MaterialDeleteResource
+from .course import CourseResource, CreateCourseResource, InstructorCoursesResource, DeleteCourseResource, EnrolledCoursesResource, EnrollStudentResource, SingleCourseResource, CourseEditResource
+from .material import MaterialResource, MaterialCreateResource, MaterialDeleteResource, MaterialEditResource
 from .question import QuestionCreateResource, QuestionListResource, QuestionDeleteResource
 from .review import ReviewResource, ReviewDeleteResource, InstructorReviewsResource
 from .user import UserProfileResource, UserStudentListResource, DeleteUserResource
-from .week import WeekCreateResource, WeekDeletionResource
+from .week import WeekCreateResource, WeekDeletionResource, WeekEditResource, WeekResource
 from .ai import AskResource, QuestionHintResource, SummarizeResource
 from .assignment_scores import AssignmentScoresResource, AllAssignmentScoresResource
 from .material_doubts import MaterialDoubtCreateResource, MaterialDoubtsResource, AllMaterialDoubtsResource, StudentDoubtsResource
@@ -45,13 +45,16 @@ def init_routes(app):
     api.add_resource(CreateCourseResource, '/course/create')
     api.add_resource(InstructorCoursesResource, '/course/instructor')
     api.add_resource(DeleteCourseResource, '/course/delete/<int:course_id>')
+    api.add_resource(CourseEditResource, '/course/edit/<int:course_id>')
     api.add_resource(EnrolledCoursesResource, '/course/enrolled')
     api.add_resource(EnrollStudentResource, '/course/enroll/<int:course_id>/<int:student_id>')
     api.add_resource(SingleCourseResource, '/course/<int:course_id>')
 
     # Material Routes
+    api.add_resource(MaterialResource, '/material/<int:material_id>')
     api.add_resource(MaterialCreateResource, '/material/create/<int:week_id>')
     api.add_resource(MaterialDeleteResource, '/material/delete/<int:material_id>')
+    api.add_resource(MaterialEditResource, '/material/edit/<int:material_id>')
 
 
     # Question Routes
@@ -72,6 +75,8 @@ def init_routes(app):
     # Week Routes
     api.add_resource(WeekCreateResource, '/week/create/<int:course_id>')
     api.add_resource(WeekDeletionResource, '/week/delete/<int:course_id>/<int:week_id>')
+    api.add_resource(WeekEditResource, '/week/edit/<int:course_id>/<int:week_id>')
+    api.add_resource(WeekResource, '/week/<int:week_id>')
 
     # AI Routes
     api.add_resource(AskResource, '/ask')

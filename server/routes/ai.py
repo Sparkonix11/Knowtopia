@@ -63,7 +63,7 @@ def extract_text_from_file(file_path):
 def extract_topic_heading(question):
     try:
         response = client.chat.completions.create(
-            model="gpt-4o",
+            model="gpt-3.5-turbo",
             messages=[
                 {"role": "system", "content": "You are an AI trained to summarize questions into concise topic headings."},
                 {"role": "user", "content": f"Extract a short topic heading from this question: {question}"}

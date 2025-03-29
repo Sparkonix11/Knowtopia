@@ -102,6 +102,16 @@ const router = createRouter({
             path: '/instructor-enrollment-requests',
             name: 'InstructorEnrollmentRequests',
             component: InstructorEnrollmentRequestsView
+        },
+        {
+            path: '/edit-course/:id',
+            name: 'EditCourse',
+            component: () => import('@/views/EditCourseView.vue')
+        },
+        {
+            path: '/edit-sublecture/:materialId',
+            name: 'EditSubLecture',
+            component: () => import('@/views/EditSubLectureView.vue')
         }
     ]
 });

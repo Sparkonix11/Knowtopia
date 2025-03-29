@@ -4,7 +4,9 @@ import EnrolledCourseCard from '@/components/EnrolledCourseCard.vue';
 import CreateCourseView from './CreateCourseView.vue';
 import CreateLecturesView from './CreateLecturesView.vue';
 import { useInstructorCourses } from '../handlers/useInstructorCourses';
+import { useRouter } from 'vue-router';
 
+const router = useRouter();
 
 const {
   instructorCourses,
@@ -16,6 +18,11 @@ const {
   toggleCreateCourse,
   toggleCreateLecture
 } = useInstructorCourses();
+
+// Function to navigate to edit course page
+const navigateToEditCourse = (courseId) => {
+  router.push({ name: 'EditCourse', params: { id: courseId } });
+};
 </script>
 
 
@@ -53,11 +60,14 @@ const {
                     <EnrolledCourseCard 
                         v-for="course in instructorCourses" 
                         :key="course.id"
+                        :courseId="course.id"
                         :courseName="course.name" 
                         :description="course.description"
                         :thumbnail="course.thumbnail_path"
                         :time="course.duration || 'N/A'" 
                         :progress="course.progress || 0.6"
+                        :isInstructor="true"
+                        @editCourse="navigateToEditCourse"
                     />
                 </template>
                 

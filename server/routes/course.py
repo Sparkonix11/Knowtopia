@@ -253,6 +253,66 @@ class DeleteCourseResource(Resource):
         except Exception as e:
             db.session.rollback()
             return {'error': f'Failed to delete course: {str(e)}'}, 500
+            
+class CourseEditResource(Resource):
+    @login_required
+    def put(self, course_id):
+        try:
+            if not current_user.is_instructor:
+                return {'error': 'User is not an instructor'}, 403
+            
+            course = Course.query.get(course_id)
+            if not course:
+                return {'error': 'Course not found'}, 404
+            
+            if course.creator_user_id != current_user.id:
+                return {'error': 'User is not the creator of the course'}, 403
+            
+            data = request.form
+            required_fields = ['name', 'description']
+            if not all(field in data for field in required_fields):
+                return {'error': 'Missing required fields'}, 400
+            
+            # Check if the new name already exists (excluding the current course)
+            existing_course = Course.query.filter(
+                Course.name == data['name'],
+                Course.id != course_id
+            ).first()
+            if existing_course:
+                return {'error': 'Course with this name already exists'}, 400
+            
+            course.name = data['name']
+            course.description = data['description']
+            
+            # Handle thumbnail update if provided
+            file = request.files.get('thumbnail')
+            if file and file.filename:
+                filename = secure_filename(file.filename)
+                file_ext = filename.rsplit(".", 1)[-1].lower()
+                if file_ext not in ALLOWED_EXTENSIONS:
+                    return {'error': 'File type not allowed'}, 400
+                
+                if not os.path.exists(THUMBNAIL_FOLDER):
+                    os.makedirs(THUMBNAIL_FOLDER)
+                
+                image_filename = secure_filename(f"{course.id}.{file_ext}")
+                image_path = os.path.join(THUMBNAIL_FOLDER, image_filename)
+                file.save(image_path)
+                course.thumbnail_path = f"/{THUMBNAIL_FOLDER}/{image_filename}"
+            
+            db.session.commit()
+            
+            course_data = {
+                'id': course.id,
+                'name': course.name,
+                'description': course.description,
+                'thumbnail_path': course.thumbnail_path
+            }
+            
+            return {'message': 'Course updated', 'course': course_data}, 200
+        except Exception as e:
+            db.session.rollback()
+            return {'error': f'Failed to update course: {str(e)}'}, 500
         
 class EnrolledCoursesResource(Resource):
     @login_required

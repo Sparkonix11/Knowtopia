@@ -1,7 +1,7 @@
 import { weekEndpoints } from "../apis";
 import { apiConnector } from "../apiConnector";
 
-const { CREATE_WEEK, DELETE_WEEK } = weekEndpoints;
+const { CREATE_WEEK, DELETE_WEEK, EDIT_WEEK } = weekEndpoints;
 
 export async function createWeekAPI(courseId, formData) {
     try {
@@ -15,6 +15,15 @@ export async function createWeekAPI(courseId, formData) {
 export async function deleteWeekAPI(courseId, weekId) {
     try {
         const response = await apiConnector('DELETE', DELETE_WEEK(courseId, weekId));
+        return response;
+    } catch (error) {
+        return error.response;
+    }
+}
+
+export async function editWeekAPI(courseId, weekId, formData) {
+    try {
+        const response = await apiConnector('PUT', EDIT_WEEK(courseId, weekId), formData);
         return response;
     } catch (error) {
         return error.response;

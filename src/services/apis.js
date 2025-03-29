@@ -22,6 +22,7 @@ export const courseEndpoints = {
     CREATE_COURSE: `${API_URL}/course/create`,
     INSTRUCTOR_COURSES: `${API_URL}/course/instructor`,
     DELETE_COURSE: (courseId) => `${API_URL}/course/delete/${courseId}`,
+    EDIT_COURSE: (courseId) => `${API_URL}/course/edit/${courseId}`,
     ENROLLED_COURSES: `${API_URL}/course/enrolled`,
     ENROLL_STUDENT: (courseId, studentId) => `${API_URL}/course/enroll/${courseId}/${studentId}`,
     SINGLE_COURSE: (courseId) => `${API_URL}/course/${courseId}`,
@@ -37,6 +38,7 @@ export const enrollmentRequestEndpoints = {
 export const materialEndpoints = {
     CREATE_MATERIAL: (weekId) => `${API_URL}/material/create/${weekId}`,
     DELETE_MATERIAL: (materialId) => `${API_URL}/material/delete/${materialId}`,
+    EDIT_MATERIAL: (materialId) => `${API_URL}/material/edit/${materialId}`,
 };
 
 export const questionEndpoints = {
@@ -59,6 +61,7 @@ export const userEndpoints = {
 export const weekEndpoints = {
     CREATE_WEEK: (courseId) => `${API_URL}/week/create/${courseId}`,
     DELETE_WEEK: (courseId, weekId) => `${API_URL}/week/delete/${courseId}/${weekId}`,
+    EDIT_WEEK: (courseId, weekId) => `${API_URL}/week/edit/${courseId}/${weekId}`,
 };
 
 export const aiEndpoints = {
