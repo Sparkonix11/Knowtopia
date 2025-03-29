@@ -1,0 +1,18 @@
+services:
+  backend:
+    image: ramprasad08/se-backend:latest
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./server:/app
+      - ./server/database:/app/database
+    environment:
+      - FLASK_ENV=development
+      - DATABASE_URL=sqlite:///app.db
+      - OPENAI_API_KEY= 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
+  frontend:
+    image: ramprasad08/se-frontend:latest
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
