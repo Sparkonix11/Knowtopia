@@ -5,6 +5,7 @@ import router from './router/router.js'
 import store from './stores/store.js'
 import '@material/web/all.js'
 import './theme/light.css'
+import './theme/responsive.css'
 
 
 const app = createApp(App)

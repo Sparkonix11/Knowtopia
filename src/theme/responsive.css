@@ -1,0 +1,123 @@
+/* Responsive styles for 1366x768 resolution */
+
+/* Base responsive adjustments */
+@media screen and (max-width: 1366px) {
+  /* Global font size adjustments */
+  html {
+    font-size: 14px;
+  }
+  
+  /* Navbar adjustments */
+  .navbar {
+    padding-left: 1rem;
+    padding-right: 1rem;
+    height: 4rem;
+  }
+  
+  .navbar img.rounded-full {
+    width: 3rem;
+    height: 3rem;
+  }
+  
+  /* Search bar adjustments */
+  .navbar input[type="text"] {
+    width: 100%;
+    max-width: 300px;
+    height: 2.5rem;
+  }
+  
+  /* Sidebar adjustments */
+  .w-90 {
+    width: 240px;
+  }
+  
+  /* Main content adjustments */
+  .ml-[20%] {
+    margin-left: 240px;
+  }
+  
+  /* Adjust padding for content */
+  .px-6 {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  
+  /* Adjust spacing in cards and containers */
+  .gap-6 {
+    gap: 1rem;
+  }
+  
+  /* Adjust iframe heights */
+  iframe.h-[70vh] {
+    height: 60vh;
+  }
+  
+  /* Adjust content heights */
+  .h-[calc(100vh-120px)] {
+    height: calc(100vh - 100px);
+  }
+  
+  /* Adjust padding in components */
+  .p-8 {
+    padding: 1.5rem;
+  }
+  
+  /* Adjust margins */
+  .my-10 {
+    margin-top: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  /* Adjust button sizes */
+  .w-24.h-12 {
+    width: 5rem;
+    height: 2.5rem;
+  }
+  
+  /* Adjust menu widths */
+  .w-147 {
+    width: 100%;
+    max-width: 300px;
+  }
+  
+  /* Adjust icon sizes */
+  md-icon {
+    font-size: 1.25rem;
+  }
+  
+  /* Adjust text sizes */
+  .text-2xl {
+    font-size: 1.25rem;
+    line-height: 1.75rem;
+  }
+}
+
+/* Additional adjustments for very tight screens */
+@media screen and (max-width: 1280px) {
+  /* Further reduce sidebar width */
+  .w-90 {
+    width: 220px;
+  }
+  
+  /* Adjust main content margin */
+  .ml-[20%] {
+    margin-left: 220px;
+  }
+  
+  /* Reduce padding further */
+  .px-6 {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+  
+  /* Adjust navbar padding */
+  .navbar {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+  
+  /* Reduce search bar width */
+  .navbar input[type="text"] {
+    max-width: 250px;
+  }
+}

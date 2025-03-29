@@ -24,3 +24,9 @@ dist-ssr
 *.sw?
 server/myenv/
 server/.env
+
+#cache and db files
+server/__pycache__/
+server/**/__pycache__/
+server/instance/
+server/uploads/
