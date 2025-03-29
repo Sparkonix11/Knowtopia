@@ -108,11 +108,11 @@ const router = createRouter({
             name: 'EditCourse',
             component: () => import('@/views/EditCourseView.vue')
         },
-        {
-            path: '/edit-sublecture/:materialId',
-            name: 'EditSubLecture',
-            component: () => import('@/views/EditSubLectureView.vue')
-        }
+        // {
+        //     path: '/edit-sublecture/:materialId',
+        //     name: 'EditSubLecture',
+        //     component: () => import('@/views/EditSubLectureView.vue')
+        // }
     ]
 });
 
