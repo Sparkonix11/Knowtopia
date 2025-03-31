@@ -1,5 +1,5 @@
 import { ref } from 'vue';
-import { apiConnector } from '../services/apiConnector';
+import { editCourseAPI } from '../services/operations/courseAPI';
 
 export function useEditCourse() {
   const isLoading = ref(false);
@@ -18,12 +18,7 @@ export function useEditCourse() {
         formData.append('thumbnail', thumbnailFile);
       }
       
-      const response = await apiConnector(
-        'PUT',
-        `http://127.0.0.1:5000/api/v1/course/edit/${courseId}`,
-        formData,
-        true // multipart/form-data
-      );
+      const response = await editCourseAPI(courseId, formData);
       
       if (response.status === 200) {
         return response.data;

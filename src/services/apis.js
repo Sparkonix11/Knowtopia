@@ -39,6 +39,7 @@ export const materialEndpoints = {
     CREATE_MATERIAL: (weekId) => `${API_URL}/material/create/${weekId}`,
     DELETE_MATERIAL: (materialId) => `${API_URL}/material/delete/${materialId}`,
     EDIT_MATERIAL: (materialId) => `${API_URL}/material/edit/${materialId}`,
+    GET_MATERIAL: (materialId) => `${API_URL}/material/${materialId}`,
 };
 
 export const questionEndpoints = {
@@ -62,6 +63,7 @@ export const weekEndpoints = {
     CREATE_WEEK: (courseId) => `${API_URL}/week/create/${courseId}`,
     DELETE_WEEK: (courseId, weekId) => `${API_URL}/week/delete/${courseId}/${weekId}`,
     EDIT_WEEK: (courseId, weekId) => `${API_URL}/week/edit/${courseId}/${weekId}`,
+    GET_WEEK: (weekId) => `${API_URL}/week/${weekId}`,
 };
 
 export const aiEndpoints = {

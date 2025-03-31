@@ -6,7 +6,7 @@ const props = defineProps({
     type: String,
     required: true
   },
-  // Allow passing content through slots for flexibility
+  
 });
 </script>
 

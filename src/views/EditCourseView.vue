@@ -2,7 +2,8 @@
 import { ref, computed, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useEditCourse } from "../handlers/useEditCourse";
-import { apiConnector } from "../services/apiConnector";
+import { useGetCourse } from "../handlers/useGetCourse";
+import { editWeekAPI } from "../services/operations/weekAPI";
 
 const route = useRoute();
 const router = useRouter();
@@ -10,7 +11,12 @@ const courseId = route.params.id;
 const lectureId = route.query.lectureId;
 const isLecture = route.query.isLecture === 'true';
 
-const { editCourse, isLoading, error } = useEditCourse();
+const { editCourse, isLoading: isEditLoading, error: editError } = useEditCourse();
+const { getCourse, getLecture, isLoading: isGetLoading, error: getError } = useGetCourse();
+
+// Computed properties for combined loading and error states
+const isLoading = computed(() => isEditLoading || isGetLoading);
+const error = computed(() => editError || getError);
 
 const name = ref("");
 const description = ref("");
@@ -27,20 +33,18 @@ const formErrors = ref({
 onMounted(async () => {
     try {
         if (isLecture && lectureId) {
-            // Fetch lecture details
-            const response = await apiConnector('GET', `http://127.0.0.1:5000/api/v1/week/${lectureId}`);
-            if (response && response.status === 200) {
-                const lecture = response.data.week;
+            // Fetch lecture details using the handler
+            const lecture = await getLecture(lectureId);
+            if (lecture) {
                 name.value = lecture.name;
                 description.value = lecture.description || "";
                 // Lectures don't have thumbnails
                 previewUrl.value = null;
             }
         } else if (courseId) {
-            // Fetch course details
-            const response = await apiConnector('GET', `http://127.0.0.1:5000/api/v1/course/${courseId}`);
-            if (response && response.status === 200) {
-                const course = response.data.course;
+            // Fetch course details using the handler
+            const course = await getCourse(courseId);
+            if (course) {
                 name.value = course.name;
                 description.value = course.description || "";
                 if (course.thumbnail_url) {
@@ -129,7 +133,7 @@ const handleEditCourse = async () => {
             formData.append('name', name.value);
             formData.append('description', description.value);
             
-            response = await apiConnector('PUT', `http://127.0.0.1:5000/api/v1/week/edit/${courseId}/${lectureId}`, formData);
+            response = await editWeekAPI(courseId, lectureId, formData);
             
             if (response && response.status === 200) {
                 // Navigate back to course page

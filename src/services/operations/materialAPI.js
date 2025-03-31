@@ -1,7 +1,7 @@
 import { materialEndpoints } from "../apis";
 import { apiConnector } from "../apiConnector";
 
-const { CREATE_MATERIAL, DELETE_MATERIAL, EDIT_MATERIAL } = materialEndpoints;
+const { CREATE_MATERIAL, DELETE_MATERIAL, EDIT_MATERIAL, GET_MATERIAL } = materialEndpoints;
 
 export async function createMaterialAPI(weekId, formData) {
     try {
@@ -32,7 +32,7 @@ export async function editMaterialAPI(materialId, formData) {
 
 export async function getMaterialAPI(materialId) {
     try {
-        const response = await apiConnector('GET', `http://127.0.0.1:5000/api/v1/material/${materialId}`);
+        const response = await apiConnector('GET', GET_MATERIAL(materialId));
         return response;
     } catch (error) {
         return error.response;

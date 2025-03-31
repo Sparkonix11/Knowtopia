@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
 import { useEditSubLecture } from "../handlers/useEditSubLecture";
-import { apiConnector } from "../services/apiConnector";
+import { useGetMaterial } from "../handlers/useGetMaterial";
 
 const props = defineProps({
     materialId: {
@@ -24,7 +24,12 @@ const props = defineProps({
 
 const emit = defineEmits(["close"]);
 
-const { editSubLecture, isLoading, error } = useEditSubLecture();
+const { editSubLecture, isLoading: isEditLoading, error: editError } = useEditSubLecture();
+const { getMaterial, isLoading: isGetLoading, error: getError } = useGetMaterial();
+
+// Computed properties for combined loading and error states
+const isLoading = computed(() => isEditLoading || isGetLoading);
+const error = computed(() => editError || getError);
 
 const title = ref("");
 const description = ref("");
@@ -44,10 +49,9 @@ const formErrors = ref({
 onMounted(async () => {
     if (props.materialId) {
         try {
-            // Fetch material details
-            const response = await apiConnector('GET', `http://127.0.0.1:5000/api/v1/material/${props.materialId}`);
-            if (response && response.status === 200) {
-                const material = response.data.material;
+            // Fetch material details using the handler
+            const material = await getMaterial(props.materialId);
+            if (material) {
                 title.value = material.title;
                 description.value = material.description || "";
                 if (material.file_url) {
