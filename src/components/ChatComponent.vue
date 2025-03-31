@@ -12,7 +12,7 @@ const props = defineProps({
 const store = useStore();
 const message = ref('');
 
-// Watch for message changes
+
 watch(() => message.value, (newValue) => {
   console.log('Message updated:', {
     value: newValue,
@@ -24,7 +24,7 @@ const error = computed(() => store.getters['chat/error']);
 const conversation = computed(() => store.getters['chat/getCurrentConversation']);
 const canSendMessage = computed(() => !isLoading.value && message.value.trim().length > 0);
 
-// Set the current material ID when the component is mounted or when it changes
+
 watch(() => props.currentMaterialId, (newValue) => {
     if (newValue) {
         store.dispatch('chat/setCurrentMaterial', newValue);
@@ -54,7 +54,7 @@ watch(isLoading, (newVal) => {
   console.log('Loading state changed:', newVal);
 });
 
-// Auto-scroll to the bottom of the chat when new messages are added
+
 const chatContainer = ref(null);
 watch(() => conversation.value.length, () => {
     setTimeout(() => {

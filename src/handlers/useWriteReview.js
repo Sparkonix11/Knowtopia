@@ -8,17 +8,14 @@ export function useWriteReview(materialId, onSuccess) {
   const store = useStore();
   const user = computed(() => store.getters["user/currentUser"]);
   
-  // Form state initialization
   const initialState = {
     rating: 0,
     comment: ''
   };
   
-  // Additional UI state
   const hoverRating = ref(0);
   const success = ref(false);
   
-  // Form validation function
   const validateReviewForm = (formData) => {
     const errors = {};
     
@@ -33,7 +30,6 @@ export function useWriteReview(materialId, onSuccess) {
     return createValidationResult(Object.keys(errors).length === 0, errors);
   };
   
-  // Form submission function
   const submitReview = async (formData) => {
     try {
       const payload = {
@@ -59,7 +55,6 @@ export function useWriteReview(materialId, onSuccess) {
     }
   };
   
-  // Initialize form using the useForm utility
   const { 
     formState, 
     errors, 
@@ -70,7 +65,6 @@ export function useWriteReview(materialId, onSuccess) {
     resetForm 
   } = useForm(initialState, validateReviewForm, submitReview);
   
-  // Star rating UI handlers
   const setRating = (value) => {
     updateField('rating', value);
   };

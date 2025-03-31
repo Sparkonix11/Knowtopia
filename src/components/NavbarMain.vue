@@ -10,16 +10,13 @@ const chatOpen = ref(false);
 const notifOpen = ref(false);
 const searchQuery = ref('');
 
-// Initialize search handler
 const { performSearch } = useSearch();
 
 const store = useStore();
 const user = computed(() => store.getters["user/currentUser"]);
 
-// Use the provided image or fallback to a default avatar
 const avatar = user.value.image ? `../../server${user.value.image}` : '';
 
-// Get current material ID if available (from route or parent component)
 const props = defineProps({
     currentMaterialId: {
         type: [Number, String],

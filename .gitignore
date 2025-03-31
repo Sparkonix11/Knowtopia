@@ -30,3 +30,5 @@ server/__pycache__/
 server/**/__pycache__/
 server/instance/
 server/uploads/
+
+.env

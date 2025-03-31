@@ -40,7 +40,6 @@ const currentLectureId = ref(null);
 const currentSubLectureId = ref(null);
 const currentWeekId = ref(null);
 
-// Initialize the assignment handler
 const {
   questions,
   selectedAnswers,
@@ -56,36 +55,28 @@ const {
   resetAssignment
 } = useAssignment();
 
-// Fetch course data on component mount
 onMounted(async () => {
   try {
     isLoading.value = true;
     
-    // Check if we have an assignmentId in the query parameters
     const assignmentIdFromQuery = route.query.assignmentId;
     console.log('Assignment ID from query:', assignmentIdFromQuery);
     
-    // First, get a list of courses to find the course ID
     const listResponse = isInstructor.value 
       ? await getInstructorCoursesAPI()
       : await getEnrolledCoursesAPI();
     
     if (listResponse.status === 200) {
-      // For instructor, data is in courses
-      // For student, data is in enrolled_courses
       const courses = isInstructor.value 
         ? listResponse.data.courses 
         : listResponse.data.enrolled_courses;
       
-      // Find the current course (use route params if available, otherwise take first course)
       const courseIdFromParams = route.params.id;
       let courseId;
       
       if (courseIdFromParams) {
-        // Use the course ID from route params if available
         courseId = courseIdFromParams;
       } else if (courses && courses.length > 0) {
-        // Otherwise use the first course
         courseId = courses[0].id;
       } else {
         error.value = 'No courses available';
@@ -93,7 +84,6 @@ onMounted(async () => {
         return;
       }
       
-      // Fetch the specific course with all its data
       const courseResponse = await getSingleCourseAPI(courseId);
       
       if (courseResponse.status === 200) {

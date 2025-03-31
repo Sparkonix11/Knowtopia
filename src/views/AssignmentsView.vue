@@ -1,26 +1,28 @@
 <script setup>
 import NavbarMain from '@/components/NavbarMain.vue';
 import Sidebar from '@/components/Sidebar.vue';
-import { ref, onMounted, computed } from 'vue';
+import { onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useStore } from 'vuex';
-import { apiConnector } from '../services/apiConnector';
-import { assignmentEndpoints, courseEndpoints } from '../services/apis';
+import { useAssignments } from '../handlers/useAssignments';
 
 const router = useRouter();
 const store = useStore();
 const user = computed(() => store.getters["user/currentUser"]);
 
-const assignments = ref([]);
-const isLoading = ref(true);
-const error = ref(null);
+// Use the assignments handler
+const { 
+  assignments, 
+  isLoading, 
+  error, 
+  fetchInstructorAssignments, 
+  fetchStudentAssignments,
+  formatDueDate 
+} = useAssignments();
 
 // Fetch assignments based on user role
 onMounted(async () => {
   try {
-    isLoading.value = true;
-    error.value = null;
-    
     if (user.value.is_instructor) {
       // For instructors, fetch all assignments they created
       await fetchInstructorAssignments();
@@ -30,110 +32,12 @@ onMounted(async () => {
     }
   } catch (err) {
     console.error('Error fetching assignments:', err);
-    error.value = err.message || 'Failed to load assignments';
-  } finally {
-    isLoading.value = false;
   }
 });
 
-// Fetch assignments for instructors
-const fetchInstructorAssignments = async () => {
-  try {
-    // First get all courses created by the instructor
-    const coursesResponse = await apiConnector('GET', courseEndpoints.INSTRUCTOR_COURSES);
-    
-    if (coursesResponse.status !== 200) {
-      throw new Error(coursesResponse.data?.error || 'Failed to fetch instructor courses');
-    }
-    
-    const instructorCourses = coursesResponse.data.courses;
-    const allAssignments = [];
-    
-    // For each course, get all weeks and their assignments
-    for (const course of instructorCourses) {
-      const courseResponse = await apiConnector('GET', courseEndpoints.SINGLE_COURSE(course.id));
-      
-      if (courseResponse.status === 200) {
-        const courseData = courseResponse.data.course;
-        
-        // Process each week to find assignments
-        for (const week of courseData.weeks) {
-          // Find materials that are assignments
-          const weekAssignments = week.materials.filter(material => material.isAssignment);
-          
-          // Add course and week info to each assignment
-          weekAssignments.forEach(assignment => {
-            allAssignments.push({
-              id: assignment.assignment_id,
-              name: assignment.material_name,
-              description: assignment.description || '',
-              due_date: assignment.due_date,
-              courseId: course.id,
-              courseName: course.name,
-              weekId: week.id,
-              weekName: week.name
-            });
-          });
-        }
-      }
-    }
-    
-    assignments.value = allAssignments;
-  } catch (err) {
-    console.error('Error fetching instructor assignments:', err);
-    throw err;
-  }
-};
+// Removed fetchInstructorAssignments as it's now in the useAssignments handler
 
-// Fetch assignments for students
-const fetchStudentAssignments = async () => {
-  try {
-    // First get all enrolled courses
-    const coursesResponse = await apiConnector('GET', courseEndpoints.ENROLLED_COURSES);
-    
-    if (coursesResponse.status !== 200) {
-      throw new Error(coursesResponse.data?.error || 'Failed to fetch enrolled courses');
-    }
-    
-    // The API returns enrolled_courses, not courses
-    const enrolledCourses = coursesResponse.data.enrolled_courses || [];
-    const allAssignments = [];
-    
-    // For each course, get all weeks and their assignments
-    for (const course of enrolledCourses) {
-      const courseResponse = await apiConnector('GET', courseEndpoints.SINGLE_COURSE(course.id));
-      
-      if (courseResponse.status === 200) {
-        const courseData = courseResponse.data.course;
-        
-        // Process each week to find assignments
-        for (const week of courseData.weeks) {
-          // Find materials that are assignments
-          const weekAssignments = week.materials.filter(material => material.isAssignment);
-          
-          // Add course and week info to each assignment
-          weekAssignments.forEach(assignment => {
-            allAssignments.push({
-              id: assignment.assignment_id,
-              name: assignment.material_name,
-              description: assignment.description || '',
-              due_date: assignment.due_date,
-              courseId: course.id,
-              courseName: course.name,
-              weekId: week.id,
-              weekName: week.name
-            });
-          });
-        }
-      }
-    }
-    
-    assignments.value = allAssignments;
-  } catch (err) {
-    console.error('Error fetching student assignments:', err);
-    throw err;
-  }
-};
+// Removed fetchStudentAssignments as it's now in the useAssignments handler
 
 // Navigate to the assignment in the course view
 const goToAssignment = (assignment) => {
@@ -144,11 +48,7 @@ const goToAssignment = (assignment) => {
     query: { assignmentId: assignment.id }
   });
 };
-// Format date for display
-const formatDueDate = (dateString) => {
-  const date = new Date(dateString);
-  return date.toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
-};
+// Removed formatDueDate as it's now in the useAssignments handler
 </script>
 
 <template>

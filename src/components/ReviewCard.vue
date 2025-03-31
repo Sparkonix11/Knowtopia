@@ -21,7 +21,6 @@ const props = defineProps({
   }
 });
 
-// Use the provided image or fallback to the default avatar
 const userAvatar = props.userImage ? `../../server${props.userImage}` : avatar;
 </script>
 

@@ -1,7 +1,6 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
-import { useEditCourse } from "../handlers/useEditCourse";
-import { apiConnector } from "../services/apiConnector";
+import { useEditLecture } from "../handlers/useEditLecture";
 
 const props = defineProps({
     courseId: {
@@ -20,7 +19,7 @@ const props = defineProps({
 
 const emit = defineEmits(["close"]);
 
-const { editCourse, isLoading, error } = useEditCourse();
+const { fetchLecture, editLecture, isLoading, error } = useEditLecture();
 
 const name = ref("");
 const formErrors = ref({
@@ -31,10 +30,9 @@ const formErrors = ref({
 onMounted(async () => {
     if (props.lectureId) {
         try {
-            // Fetch lecture details
-            const response = await apiConnector('GET', `http://127.0.0.1:5000/api/v1/week/${props.lectureId}`);
-            if (response && response.status === 200) {
-                const lecture = response.data.week;
+            // Fetch lecture details using the handler
+            const lecture = await fetchLecture(props.lectureId);
+            if (lecture) {
                 name.value = lecture.name;
             }
         } catch (err) {
@@ -76,13 +74,10 @@ const handleEditLecture = async () => {
     const isNameValid = validateName();
     
     if (isNameValid) {
-        // Update lecture - using FormData instead of JSON
-        const formData = new FormData();
-        formData.append('name', name.value);
+        // Update lecture using the handler
+        const response = await editLecture(props.courseId, props.lectureId, name.value);
         
-        const response = await apiConnector('PUT', `http://127.0.0.1:5000/api/v1/week/edit/${props.courseId}/${props.lectureId}`, formData);
-        
-        if (response && response.status === 200) {
+        if (response) {
             // Close the popup and refresh the course data
             closePopup();
         }

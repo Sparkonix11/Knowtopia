@@ -2,9 +2,9 @@
 import NavbarMain from '@/components/NavbarMain.vue';
 import Sidebar from '@/components/Sidebar.vue';
 
-// Define props to allow customization of the layout
+
 const props = defineProps({
-  // Optional class for the content container
+  
   contentClass: {
     type: String,
     default: 'my-10 gap-6'

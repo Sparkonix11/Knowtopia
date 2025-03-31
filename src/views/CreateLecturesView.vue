@@ -15,7 +15,6 @@ const lectures = computed(() => creatingCourseWeeks.value);
 const isLoading = ref(false);
 const error = ref(null);
 
-// Initialize the component
 onMounted(async () => {
     isLoading.value = true;
     try {
@@ -51,17 +50,12 @@ const toggleAddLecture = () => {
     updateWeeks();
 };
 
-// Edit lecture functionality
 const editingLecture = ref(null);
 const editLecture = (lecture) => {
     editingLecture.value = lecture;
-    // Implementation for editing lecture would go here
-    // For now, we'll just log it
     console.log("Editing lecture:", lecture);
-    // In a real implementation, you might open a modal or form for editing
 };
 
-// Delete lecture functionality
 const deleteLecture = async (lectureId) => {
     if (!confirm("Are you sure you want to delete this lecture? This action cannot be undone.")) {
         return;
@@ -86,7 +80,6 @@ const deleteLecture = async (lectureId) => {
     }
 };
 
-// Delete sub-lecture (material) functionality
 const deleteMaterial = async (weekId, materialId) => {
     if (!confirm("Are you sure you want to delete this content? This action cannot be undone.")) {
         return;
