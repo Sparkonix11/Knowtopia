@@ -168,7 +168,8 @@ class AskResource(Resource):
                 messages=[
                     {"role": "system", "content": system_message},
                     {"role": "user", "content": user_message},
-                    {"role": "system", "content": "Instead of giving a direct answer, provide hints and guidance to help the student think through the problem. Don't do the work for the student, but help her/him learn how to solve the problem on their own."}
+                    {"role": "system", "content": "Instead of giving a direct answer, provide hints and guidance to help the student think through the problem. Don't do the work for the student, but help her/him learn how to solve the problem on their own.\
+                     Provide answer only from the material provided. If the answer is not in the material, say 'I don't know'."}
                 ],
                 max_tokens=150,
                 temperature=0.7,
@@ -210,7 +211,7 @@ class QuestionHintResource(Resource):
                 messages=[
                     {"role": "system", "content": "You are an experienced teacher who gives hints about the correct answer without revealing it."},
                     {"role": "user", "content": f"Question: {question}\nOptions: {', '.join(options)}\nProvide hints without revealing the answer."},
-                    {"role": "system", "content": "Do not state the correct answer explicitly. Instead, provide logical reasoning and indirect clues to help the student figure it out."}
+                    {"role": "system", "content": "Do not state the correct answer explicitly. Instead, provide logical reasoning and indirect clues to help the student figure it out. "}
                 ],
                 max_tokens=100,
                 temperature=0.7
