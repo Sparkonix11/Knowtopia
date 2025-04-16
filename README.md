@@ -14,7 +14,7 @@ Ensure you have the following installed on your system:
 ## 1. Clone the Repository
 
 ```
-git clone [https://github.com/Sparkonix11/Knowtopia.git]
+git clone https://github.com/Sparkonix11/Knowtopia.git
 cd SE-Project
 ```
 
