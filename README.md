@@ -1,4 +1,4 @@
-# SE-Project Setup Guide
+# Knowtopia Setup Guide
 
 This guide provides comprehensive instructions for setting up the SE-Project from scratch, including both frontend (Vue.js) and backend (Flask) components.
 
@@ -15,7 +15,7 @@ Ensure you have the following installed on your system:
 
 ```
 git clone https://github.com/Sparkonix11/Knowtopia.git
-cd SE-Project
+cd Knowtopia
 ```
 
 ## 2. Frontend Setup (Vue.js)
