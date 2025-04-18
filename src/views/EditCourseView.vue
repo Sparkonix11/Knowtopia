@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useEditCourse } from "../handlers/useEditCourse";
 import { useGetCourse } from "../handlers/useGetCourse";
@@ -14,9 +14,20 @@ const isLecture = route.query.isLecture === 'true';
 const { editCourse, isLoading: isEditLoading, error: editError } = useEditCourse();
 const { getCourse, getLecture, isLoading: isGetLoading, error: getError } = useGetCourse();
 
-// Computed properties for combined loading and error states
-const isLoading = computed(() => isEditLoading || isGetLoading);
-const error = computed(() => editError || getError);
+// Force loading to end after timeout
+const forceLoadingComplete = ref(false);
+const dataFetched = ref(false);
+
+// Modified loading state that includes a force complete override
+const isLoading = computed(() => {
+    // If we've forced loading to complete, or data is fetched, don't show loading
+    if (forceLoadingComplete.value || dataFetched.value) {
+        return false;
+    }
+    return isEditLoading.value || isGetLoading.value;
+});
+
+const error = computed(() => editError.value || getError.value);
 
 const name = ref("");
 const description = ref("");
@@ -29,31 +40,49 @@ const formErrors = ref({
     thumbnail: ""
 });
 
+// Set a timeout to force exit loading state after 3 seconds
+setTimeout(() => {
+    forceLoadingComplete.value = true;
+}, 3000);
+
 // Fetch course or lecture data on component mount
 onMounted(async () => {
     try {
         if (isLecture && lectureId) {
             // Fetch lecture details using the handler
             const lecture = await getLecture(lectureId);
+            
             if (lecture) {
                 name.value = lecture.name;
                 description.value = lecture.description || "";
                 // Lectures don't have thumbnails
                 previewUrl.value = null;
+                dataFetched.value = true;
+            } else {
+                throw new Error("Failed to fetch lecture details");
             }
         } else if (courseId) {
             // Fetch course details using the handler
             const course = await getCourse(courseId);
+            
             if (course) {
                 name.value = course.name;
                 description.value = course.description || "";
-                if (course.thumbnail_url) {
-                    previewUrl.value = course.thumbnail_url;
+                // Use the correct property name 'thumbnail_path'
+                if (course.thumbnail_path) {
+                    previewUrl.value = `../../server${course.thumbnail_path}`;
                 }
+                dataFetched.value = true; // Mark data as fetched
+            } else {
+                throw new Error("Failed to fetch course details");
             }
         }
     } catch (err) {
         console.error("Error fetching data:", err);
+        // Set error message to prevent infinite loading
+        editError.value = err.message || "Error loading course data";
+    } finally {
+        dataFetched.value = true;
     }
 });
 
