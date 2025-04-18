@@ -1,8 +1,8 @@
 import os
 from flask import Flask, request, jsonify
 from flask_restful import Resource
-import openai
-
+from google import genai
+from google.genai import types
 import docx                
 import PyPDF2              
 from PIL import Image      
@@ -11,8 +11,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-
-client = openai.OpenAI(api_key= os.getenv("OPENAI_API_KEY"))
+# Initialize Google Gemini API client
+client = genai.Client(api_key=os.getenv("GOOGLE_API_KEY"))
 
 def extract_text_from_pdf(file_path):
   
@@ -62,16 +62,11 @@ def extract_text_from_file(file_path):
 
 def extract_topic_heading(question):
     try:
-        response = client.chat.completions.create(
-            model="gpt-3.5-turbo",
-            messages=[
-                {"role": "system", "content": "You are an AI trained to summarize questions into concise topic headings."},
-                {"role": "user", "content": f"Extract a short topic heading from this question: {question}"}
-            ],
-            max_tokens=10,
-            temperature=0.5
+        response = client.models.generate_content(
+            model="gemini-2.0-flash",
+            contents=f"Extract a short topic heading from this question: {question}",
         )
-        topic_heading = response.choices[0].message.content.strip()
+        topic_heading = response.text.strip()
         return topic_heading
     except Exception as e:
         print(f"Error extracting topic: {e}")
@@ -88,6 +83,7 @@ class AskResource(Resource):
 
         all_text = ""
         material_name = "General Knowledge"
+        courses_context = None
         
         # If the user is logged in and asking about a specific material, record it as a doubt
         from flask_login import current_user
@@ -112,7 +108,7 @@ class AskResource(Resource):
                 print(f"Error recording doubt: {str(e)}")
                 # Continue processing even if doubt recording fails
 
-        # If material_id is provided, fetch context from the material
+        # CASE 1: If material_id is provided, only provide answers from that material
         if material_id:
             # Import Material model
             from models.material import Material
@@ -143,44 +139,87 @@ class AskResource(Resource):
                 return {"error": f"File for material ID {material_id} not found at {file_path}."}, 404
 
             all_text = extract_text_from_file(file_path)
-            # Don't print the text directly to avoid encoding issues
             print(f"Extracted text length: {len(all_text) if all_text else 0} characters")
 
             if not all_text.strip():
                 return {"error": "No text could be extracted from the material."}, 400
 
-        # If no material_id was provided or if we're here after successfully extracting text
+            # Skip to prompt generation for material
+
+        # CASE 2: No material_id provided - ONLY answer questions related to enrolled courses
+        elif current_user.is_authenticated and not current_user.is_instructor:
+            # Import enrollment model to get enrolled courses
+            from models.enrollment import Enrollment
+            from models.course import Course
+            
+            # Get all courses the student is enrolled in
+            enrolled_courses = Course.query.join(Enrollment).filter(Enrollment.student_id == current_user.id).all()
+            
+            if not enrolled_courses:
+                return jsonify({
+                    "topic": "Not Enrolled", 
+                    "answer": "You are not enrolled in any courses. Please enroll in courses to get help with course-related questions.",
+                    "material_name": "No Courses"
+                })
+            
+            # Create a context with the student's courses
+            course_names = [course.name for course in enrolled_courses]
+            course_descriptions = [f"{course.name}: {course.description}" for course in enrolled_courses]
+            courses_context = "\n".join(course_descriptions)
+            material_name = "Enrolled Courses"
+        
+        # CASE 3: User is not a student or not authenticated - instructors handle differently
+        else:
+            # For instructors or unauthenticated users, return a generic response
+            if current_user.is_authenticated and current_user.is_instructor:
+                return jsonify({
+                    "topic": "Instructor Mode", 
+                    "answer": "As an instructor, you can view course materials directly or check student doubts to answer their questions.",
+                    "material_name": "Instructor Guide"
+                })
+            else:
+                return jsonify({
+                    "topic": "Authentication Required", 
+                    "answer": "Please log in as a student and enroll in courses to ask questions.",
+                    "material_name": "Login Required"
+                })
+
         topic_heading = extract_topic_heading(question)
 
         try:
-            # Prepare system message based on whether we have material context or not
-            system_message = "You are an experienced teacher helping a student understand a topic."
-            
-            # Prepare user message based on whether we have material context
-            if all_text.strip():
-                user_message = f"Question: {question}\n\nBackground material from '{material_name}':\n{all_text}"
+            # Only two possible prompts: material-specific or enrolled-courses
+            if material_id and all_text.strip():
+                # CASE 1: Use material context if available - STRICT material only
+                prompt = f"""Question: {question} Background material from '{material_name}': {all_text} Provide hints and guidance instead of direct answers. Don't do the work for the student."""
             else:
-                # No context available, answer generally
-                user_message = f"Question: {question}"
-                
-            response = client.chat.completions.create(
-                model="gpt-3.5-turbo",
-                messages=[
-                    {"role": "system", "content": system_message},
-                    {"role": "user", "content": user_message},
-                    {"role": "system", "content": "Instead of giving a direct answer, provide hints and guidance to help the student think through the problem. Don't do the work for the student, but help her/him learn how to solve the problem on their own.\
-                     Provide answer only from the material provided. If the answer is not in the material, say 'I don't know'."}
-                ],
-                max_tokens=150,
-                temperature=0.7,
-                n=1
+                # CASE 2: For students with enrolled courses - STRICT courses only
+                prompt = f"""Question: {question}
+
+The student is enrolled in these courses:
+{courses_context}
+
+You are a teacher helping a student learn about their enrolled courses.
+STRICTLY ENFORCE: ONLY answer if the question is directly related to these specific courses.
+If the question is not about these courses, respond with EXACTLY:
+"I can only answer questions related to your enrolled courses. Please ask something about {', '.join(course_names)}."
+
+Provide hints and guidance instead of direct answers. Don't do the work for the student."""
+            
+            print(f"Using prompt type: {'Material-specific' if material_id else 'Enrolled-courses-only'}")
+            
+            response = client.models.generate_content(
+                model="gemini-2.0-flash",
+                config=types.GenerateContentConfig(
+                    system_instruction="You are an experienced teacher with strict instructions to stay within the defined scope.",
+                ),
+                contents=prompt,
             )
-            answer = response.choices[0].message.content.strip()
+            answer = response.text.strip()
 
         except Exception as e:
-            return {"error": f"OpenAI API error: {str(e)}"}, 500
+            return {"error": f"Gemini API error: {str(e)}"}, 500
 
-        # Return material name along with the answer, similar to SummarizeResource
+        # Return material name along with the answer
         return jsonify({
             "topic": topic_heading, 
             "answer": answer,
@@ -206,17 +245,17 @@ class QuestionHintResource(Resource):
             question = question_data.description
             options = [question_data.option1, question_data.option2, question_data.option3, question_data.option4]
             
-            response = client.chat.completions.create(
-                model="gpt-3.5-turbo",
-                messages=[
-                    {"role": "system", "content": "You are an experienced teacher who gives hints about the correct answer without revealing it."},
-                    {"role": "user", "content": f"Question: {question}\nOptions: {', '.join(options)}\nProvide hints without revealing the answer."},
-                    {"role": "system", "content": "Do not state the correct answer explicitly. Instead, provide logical reasoning and indirect clues to help the student figure it out. "}
-                ],
-                max_tokens=100,
-                temperature=0.7
+            # Initialize Gemini model            
+            prompt = f"Question: {question}\nOptions: {', '.join(options)}\nProvide hints without revealing the answer.\n\nDo not state the correct answer explicitly. Instead, provide logical reasoning and indirect clues to help the student figure it out."
+            
+            response = client.models.generate_content(
+                model="gemini-2.0-flash",
+                config=types.GenerateContentConfig(
+                    system_instruction="You are an experienced teacher who gives hints about the correct answer without revealing it.",
+                ),
+                contents=prompt,
             )
-            hint = response.choices[0].message.content.strip()
+            hint = response.text.strip()
 
         except Exception as e:
             return {"error": f"Error: {str(e)}"}, 500
@@ -269,19 +308,19 @@ class SummarizeResource(Resource):
             # Get material name for better context
             material_name = material.name
             
-            response = client.chat.completions.create(
-                model="gpt-3.5-turbo",
-                messages=[
-                    {"role": "system", "content": "You are a helpful AI assistant that creates concise, informative summaries."},
-                    {"role": "user", "content": f"Create a summary of the following material titled '{material_name}' in bullet points.\n\n{all_text}"},
-                ],
-                max_tokens=300,
-                temperature=0.7,
-                n=1
+            # Initialize Gemini model            
+            prompt = f"Create a summary of the following material titled '{material_name}' in bullet points.\n\n{all_text}"
+            
+            response = client.models.generate_content(
+                model="gemini-2.0-flash",
+                config=types.GenerateContentConfig(
+                    system_instruction="You are a helpful AI assistant that creates concise, informative summaries.",
+                ),
+                contents=prompt,
             )
-            answer = response.choices[0].message.content.strip()
+            answer = response.text.strip()
         except Exception as e:
-            return {"error": f"OpenAI API error: {str(e)}"}, 500
+            return {"error": f"Gemini API error: {str(e)}"}, 500
 
         topic_heading = extract_topic_heading(answer)
         
