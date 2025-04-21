@@ -1,6 +1,16 @@
 # Knowtopia Setup Guide
 
-This guide provides comprehensive instructions for setting up the SE-Project from scratch, including both frontend (Vue.js) and backend (Flask) components.
+## About the Project
+
+Knowtopia is an interactive e-learning platform that bridges the gap between traditional classroom education and digital learning experiences. The platform offers:
+
+- **Course Management**: Instructors can create and manage courses with lectures, study materials, and assignments
+- **Interactive Learning**: Students can access course materials, submit assignments, and receive immediate feedback
+- **AI-Powered Features**: Content summarization and intelligent chat assistance to enhance the learning experience
+- **Responsive Design**: A modern, Material Design-based interface that works across devices
+- **Performance Tracking**: Students can track their progress and view detailed assignment reports
+
+Built with Vue.js on the frontend and Flask on the backend, Knowtopia provides a seamless educational experience for both instructors and students.
 
 ## Prerequisites
 
