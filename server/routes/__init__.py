@@ -8,7 +8,7 @@ from .question import QuestionCreateResource, QuestionListResource, QuestionDele
 from .review import ReviewResource, ReviewDeleteResource, InstructorReviewsResource
 from .user import UserProfileResource, UserStudentListResource, DeleteUserResource
 from .week import WeekCreateResource, WeekDeletionResource, WeekEditResource, WeekResource
-from .ai import AskResource, QuestionHintResource, SummarizeResource
+from .ai import AskResource, QuestionHintResource, SummarizeResource, IndexMaterialResource, IndexAllMaterialsResource
 from .assignment_scores import AssignmentScoresResource, AllAssignmentScoresResource
 from .material_doubts import MaterialDoubtCreateResource, MaterialDoubtsResource, AllMaterialDoubtsResource, StudentDoubtsResource
 from .search import SearchResource
@@ -82,6 +82,8 @@ def init_routes(app):
     api.add_resource(AskResource, '/ask')
     api.add_resource(QuestionHintResource, '/question_hint')
     api.add_resource(SummarizeResource, '/summarize')
+    api.add_resource(IndexMaterialResource, '/index/material')
+    api.add_resource(IndexAllMaterialsResource, '/index/all')
     
     # Search Route
     api.add_resource(SearchResource, '/search')

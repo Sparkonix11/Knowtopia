@@ -1,76 +1,19 @@
+"""
+AI features for Knowtopia using RAG with LangChain and Gemini API
+"""
 import os
 from flask import Flask, request, jsonify
 from flask_restful import Resource
 from google import genai
 from google.genai import types
-import docx                
-import PyPDF2              
-from PIL import Image      
-import pytesseract
 from dotenv import load_dotenv
+from services.rag import get_rag_system, init_rag_system
+from services.rag.indexer import MaterialIndexer
 
 load_dotenv()
 
-# Initialize Google Gemini API client
-client = genai.Client(api_key=os.getenv("GOOGLE_API_KEY"))
-
-def extract_text_from_pdf(file_path):
-  
-    text = ""
-    try:
-        with open(file_path, "rb") as f:
-            pdf = PyPDF2.PdfReader(f)
-            for page in pdf.pages:
-                page_text = page.extract_text()
-                if page_text:
-                    # Clean the text of problematic Unicode characters
-                    page_text = ''.join(char if ord(char) < 0xF000 else ' ' for char in page_text)
-                    text += page_text + "\n"
-    except Exception as e:
-        print(f"Error processing PDF {file_path}: {e}")
-    return text
-
-def extract_text_from_docx(file_path):
-    try:
-        doc = docx.Document(file_path)
-        fullText = [para.text for para in doc.paragraphs]
-        return "\n".join(fullText)
-    except Exception as e:
-        print(f"Error processing DOCX {file_path}: {e}")
-        return ""
-
-def extract_text_from_image(file_path):
-    try:
-        image = Image.open(file_path)
-        text = pytesseract.image_to_string(image)
-        return text
-    except Exception as e:
-        print(f"Error processing image {file_path}: {e}")
-        return ""
-
-def extract_text_from_file(file_path):
-    _, ext = os.path.splitext(file_path)
-    ext = ext.lower()
-    if ext == ".pdf":
-        return extract_text_from_pdf(file_path)
-    elif ext in [".docx", ".doc"]:
-        return extract_text_from_docx(file_path)
-    elif ext in [".png", ".jpg", ".jpeg"]:
-        return extract_text_from_image(file_path)
-    else:
-        return ""
-
-def extract_topic_heading(question):
-    try:
-        response = client.models.generate_content(
-            model="gemini-2.0-flash",
-            contents=f"Extract a short topic heading from this question: {question}",
-        )
-        topic_heading = response.text.strip()
-        return topic_heading
-    except Exception as e:
-        print(f"Error extracting topic: {e}")
-        return "Unknown Topic"
+# Initialize RAG system
+rag_system = init_rag_system()
 
 class AskResource(Resource):
     def post(self):
@@ -80,11 +23,7 @@ class AskResource(Resource):
 
         if not question:
             return {"error": "Question is required."}, 400
-
-        all_text = ""
-        material_name = "General Knowledge"
-        courses_context = None
-        
+            
         # If the user is logged in and asking about a specific material, record it as a doubt
         from flask_login import current_user
         if current_user.is_authenticated and material_id:  
@@ -118,33 +57,18 @@ class AskResource(Resource):
             if not material:
                 return {"error": f"Material with ID {material_id} not found."}, 404
                 
-            # Get file path based on material type
-            file_path = None
-            file_name = material.filename
-            material_name = material.name
-            _, ext = os.path.splitext(file_name)
-            ext = ext.lower()
+            # Use RAG to answer with context from this material
+            response = rag_system.answer_with_rag(
+                query=question, 
+                material_id=material_id,
+                system_instruction="You are an experienced teacher with strict instructions to stay within the defined scope."
+            )
             
-            # For videos, use transcript if available
-            if ext == ".mp4" and material.transcript_path:
-                # Convert relative path to absolute path
-                transcript_path = material.transcript_path.lstrip('/')
-                file_path = os.path.join(os.getcwd(), transcript_path)
-            else:
-                # For PDFs and other files, use the material file path
-                material_path = material.file_path.lstrip('/')
-                file_path = os.path.join(os.getcwd(), material_path)
+            # Check for error in response
+            if "error" in response:
+                return {"error": response["error"]}, 500
                 
-            if not os.path.exists(file_path):
-                return {"error": f"File for material ID {material_id} not found at {file_path}."}, 404
-
-            all_text = extract_text_from_file(file_path)
-            print(f"Extracted text length: {len(all_text) if all_text else 0} characters")
-
-            if not all_text.strip():
-                return {"error": "No text could be extracted from the material."}, 400
-
-            # Skip to prompt generation for material
+            return jsonify(response)
 
         # CASE 2: No material_id provided - ONLY answer questions related to enrolled courses
         elif current_user.is_authenticated and not current_user.is_instructor:
@@ -166,7 +90,46 @@ class AskResource(Resource):
             course_names = [course.name for course in enrolled_courses]
             course_descriptions = [f"{course.name}: {course.description}" for course in enrolled_courses]
             courses_context = "\n".join(course_descriptions)
-            material_name = "Enrolled Courses"
+            
+            # Generate a response using the RAG system with enrolled courses
+            # Since this doesn't use RAG directly, we'll use Gemini API
+            try:
+                # Use the same client as in the RAG system
+                model = genai.models.get_model("gemini-2.0-flash")
+                
+                prompt = f"""Question: {question}
+
+The student is enrolled in these courses:
+{courses_context}
+
+You are a teacher helping a student learn about their enrolled courses.
+STRICTLY ENFORCE: ONLY answer if the question is directly related to these specific courses.
+If the question is not about these courses, respond with EXACTLY:
+"I can only answer questions related to your enrolled courses. Please ask something about {', '.join(course_names)}."
+
+Provide hints and guidance instead of direct answers. Don't do the work for the student."""
+                
+                response = model.generate_content(
+                    contents=prompt,
+                    system_instruction="You are an experienced teacher with strict instructions to stay within the defined scope.",
+                )
+                answer = response.text.strip()
+                
+                # Extract topic heading
+                topic_model = genai.models.get_model("gemini-2.0-flash")
+                topic_response = topic_model.generate_content(
+                    f"Extract a short topic heading from this question: {question}"
+                )
+                topic_heading = topic_response.text.strip()
+                
+                return jsonify({
+                    "topic": topic_heading, 
+                    "answer": answer,
+                    "material_name": "Enrolled Courses"
+                })
+                
+            except Exception as e:
+                return {"error": f"Gemini API error: {str(e)}"}, 500
         
         # CASE 3: User is not a student or not authenticated - instructors handle differently
         else:
@@ -183,48 +146,6 @@ class AskResource(Resource):
                     "answer": "Please log in as a student and enroll in courses to ask questions.",
                     "material_name": "Login Required"
                 })
-
-        topic_heading = extract_topic_heading(question)
-
-        try:
-            # Only two possible prompts: material-specific or enrolled-courses
-            if material_id and all_text.strip():
-                # CASE 1: Use material context if available - STRICT material only
-                prompt = f"""Question: {question} Background material from '{material_name}': {all_text} Provide hints and guidance instead of direct answers. Don't do the work for the student."""
-            else:
-                # CASE 2: For students with enrolled courses - STRICT courses only
-                prompt = f"""Question: {question}
-
-The student is enrolled in these courses:
-{courses_context}
-
-You are a teacher helping a student learn about their enrolled courses.
-STRICTLY ENFORCE: ONLY answer if the question is directly related to these specific courses.
-If the question is not about these courses, respond with EXACTLY:
-"I can only answer questions related to your enrolled courses. Please ask something about {', '.join(course_names)}."
-
-Provide hints and guidance instead of direct answers. Don't do the work for the student."""
-            
-            print(f"Using prompt type: {'Material-specific' if material_id else 'Enrolled-courses-only'}")
-            
-            response = client.models.generate_content(
-                model="gemini-2.0-flash",
-                config=types.GenerateContentConfig(
-                    system_instruction="You are an experienced teacher with strict instructions to stay within the defined scope.",
-                ),
-                contents=prompt,
-            )
-            answer = response.text.strip()
-
-        except Exception as e:
-            return {"error": f"Gemini API error: {str(e)}"}, 500
-
-        # Return material name along with the answer
-        return jsonify({
-            "topic": topic_heading, 
-            "answer": answer,
-            "material_name": material_name
-        })
 
 class QuestionHintResource(Resource):
     def post(self):
@@ -245,15 +166,13 @@ class QuestionHintResource(Resource):
             question = question_data.description
             options = [question_data.option1, question_data.option2, question_data.option3, question_data.option4]
             
-            # Initialize Gemini model            
+            # Initialize Gemini model using the same client as RAG system           
+            model = genai.models.get_model("gemini-2.0-flash")
             prompt = f"Question: {question}\nOptions: {', '.join(options)}\nProvide hints without revealing the answer.\n\nDo not state the correct answer explicitly. Instead, provide logical reasoning and indirect clues to help the student figure it out."
             
-            response = client.models.generate_content(
-                model="gemini-2.0-flash",
-                config=types.GenerateContentConfig(
-                    system_instruction="You are an experienced teacher who gives hints about the correct answer without revealing it.",
-                ),
+            response = model.generate_content(
                 contents=prompt,
+                system_instruction="You are an experienced teacher who gives hints about the correct answer without revealing it.",
             )
             hint = response.text.strip()
 
@@ -270,64 +189,88 @@ class SummarizeResource(Resource):
         if not material_id:
             return {"error": "Material ID is required."}, 400
 
-        # Import Material model
-        from models.material import Material
-        
-        # Fetch material from database
-        material = Material.query.get(material_id)
-        if not material:
-            return {"error": f"Material with ID {material_id} not found."}, 404
-            
-        # Get file path based on material type
-        file_path = None
-        file_name = material.filename
-        _, ext = os.path.splitext(file_name)
-        ext = ext.lower()
-        
-        # For videos, use transcript if available
-        if ext == ".mp4" and material.transcript_path:
-            # Convert relative path to absolute path
-            transcript_path = material.transcript_path.lstrip('/')
-            file_path = os.path.join(os.getcwd(), transcript_path)
-        else:
-            # For PDFs and other files, use the material file path
-            material_path = material.file_path.lstrip('/')
-            file_path = os.path.join(os.getcwd(), material_path)
-            
-        if not os.path.exists(file_path):
-            return {"error": f"File for material ID {material_id} not found at {file_path}."}, 404
-
-        all_text = extract_text_from_file(file_path)
-        # Don't print the text directly to avoid encoding issues
-        print(f"Extracted text length: {len(all_text) if all_text else 0} characters")
-
-        if not all_text.strip():
-            return {"error": "No text could be extracted from the material."}, 400
-
         try:
-            # Get material name for better context
-            material_name = material.name
+            # Import Material model to verify material exists
+            from models.material import Material
             
-            # Initialize Gemini model            
-            prompt = f"Create a summary of the following material titled '{material_name}' in bullet points.\n\n{all_text}"
+            # Fetch material from database
+            material = Material.query.get(material_id)
+            if not material:
+                return {"error": f"Material with ID {material_id} not found."}, 404
             
-            response = client.models.generate_content(
-                model="gemini-2.0-flash",
-                config=types.GenerateContentConfig(
-                    system_instruction="You are a helpful AI assistant that creates concise, informative summaries.",
-                ),
-                contents=prompt,
-            )
-            answer = response.text.strip()
+            # Use RAG system to summarize material
+            response = rag_system.summarize_with_rag(material_id=material_id)
+            
+            # Check for error in response
+            if "error" in response:
+                return {"error": response["error"]}, 500
+                
+            return jsonify(response)
+            
         except Exception as e:
-            return {"error": f"Gemini API error: {str(e)}"}, 500
+            return {"error": f"Error generating summary: {str(e)}"}, 500
 
-        topic_heading = extract_topic_heading(answer)
+class IndexMaterialResource(Resource):
+    def post(self):
+        """
+        Index or re-index a material in the RAG system
+        """
+        data = request.get_json(force=True)
+        material_id = data.get("material_id")
         
-        # Return material name along with the summary
-        return jsonify({
-            "topic": topic_heading, 
-            "summary": answer,
-            "material_name": material_name
-        })
+        if not material_id:
+            return {"error": "Material ID is required."}, 400
+            
+        # Check if user is instructor (only instructors can trigger indexing)
+        from flask_login import current_user
+        if not current_user.is_authenticated or not current_user.is_instructor:
+            return {"error": "Only instructors can index materials."}, 403
+            
+        try:
+            # Import Material model
+            from models.material import Material
+            
+            # Fetch material from database
+            material = Material.query.get(material_id)
+            if not material:
+                return {"error": f"Material with ID {material_id} not found."}, 404
+                
+            # Create indexer and index the material
+            indexer = MaterialIndexer()
+            success = indexer.reindex_material(material_id)
+            
+            if success:
+                return jsonify({
+                    "message": f"Material '{material.name}' was successfully indexed.",
+                    "material_id": material_id,
+                    "material_name": material.name
+                })
+            else:
+                return {"error": f"Failed to index material ID {material_id}."}, 500
+                
+        except Exception as e:
+            return {"error": f"Error indexing material: {str(e)}"}, 500
+            
+class IndexAllMaterialsResource(Resource):
+    def post(self):
+        """
+        Index all materials in the RAG system
+        """
+        # Check if user is instructor (only instructors can trigger indexing)
+        from flask_login import current_user
+        if not current_user.is_authenticated or not current_user.is_instructor:
+            return {"error": "Only instructors can index materials."}, 403
+            
+        try:
+            # Create indexer and index all materials
+            indexer = MaterialIndexer()
+            results = indexer.index_all_materials()
+            
+            return jsonify({
+                "message": f"Indexing complete. {results['success']}/{results['total']} materials indexed successfully.",
+                "results": results
+            })
+                
+        except Exception as e:
+            return {"error": f"Error indexing materials: {str(e)}"}, 500
 
