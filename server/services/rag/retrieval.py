@@ -40,12 +40,13 @@ class RAGRetrieval:
         
         # Format results for easier handling
         formatted_results = []
-        for doc, score in results:
-            formatted_results.append({
-                "content": doc.page_content,
-                "metadata": doc.metadata,
-                "score": score
-            })
+        if results:
+            for doc, score in results:
+                formatted_results.append({
+                    "content": doc.page_content,
+                    "metadata": doc.metadata,
+                    "score": score
+                })
         
         return formatted_results
     
@@ -109,7 +110,7 @@ class RAGRetrieval:
         
         # Set up prompt based on whether material_id is provided
         try:
-            if material_id:
+            if (material_id):
                 # Retrieve context specific to this material
                 context = self.retrieve_material_context(query, material_id)
                 

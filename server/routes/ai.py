@@ -75,6 +75,7 @@ class AskResource(Resource):
             # Import enrollment model to get enrolled courses
             from models.enrollment import Enrollment
             from models.course import Course
+            from models.material import Material
             
             # Get all courses the student is enrolled in
             enrolled_courses = Course.query.join(Enrollment).filter(Enrollment.student_id == current_user.id).all()
@@ -86,15 +87,66 @@ class AskResource(Resource):
                     "material_name": "No Courses"
                 })
             
-            # Create a context with the student's courses
+            # Get material IDs from enrolled courses
+            enrolled_course_ids = [course.id for course in enrolled_courses]
+            enrolled_materials = Material.query.filter(Material.course_id.in_(enrolled_course_ids)).all()
+            enrolled_material_ids = [material.id for material in enrolled_materials]
+            
+            # First try RAG with the enrolled materials context
+            if enrolled_material_ids:
+                # Get relevant context from all enrolled materials
+                results = []
+                for material_id in enrolled_material_ids:
+                    filter_criteria = {"material_id": material_id}
+                    material_results = rag_system.retrieve_context(query=question, k=1, filter_criteria=filter_criteria)
+                    results.extend(material_results)
+                
+                # Sort by relevance score and take top 3
+                if results:
+                    results = sorted(results, key=lambda x: x.get("score", 0), reverse=True)[:3]
+                    contexts = [result["content"] for result in results]
+                    material_names = set(result["metadata"].get("material_name", "") for result in results)
+                    context = "\n\n".join(contexts)
+                    
+                    # Use RAG with Gemini for response
+                    model = genai.models.get_model("gemini-2.0-flash")
+                    material_name = ", ".join(filter(None, material_names)) or "Enrolled Courses"
+                    
+                    prompt = f"""Question: {question}
+
+Background information from your enrolled courses ({material_name}):
+
+{context}
+
+You are a teacher helping a student learn about their enrolled courses.
+Provide hints and guidance based on relevant information. Don't do the work for the student."""
+
+                    response = model.generate_content(
+                        contents=prompt,
+                        system_instruction="You are an experienced teacher with strict instructions to stay within the defined scope.",
+                    )
+                    answer = response.text.strip()
+                    
+                    # Extract topic heading
+                    topic_model = genai.models.get_model("gemini-2.0-flash")
+                    topic_response = topic_model.generate_content(
+                        f"Extract a short topic heading from this question: {question}"
+                    )
+                    topic_heading = topic_response.text.strip()
+                    
+                    return jsonify({
+                        "topic": topic_heading, 
+                        "answer": answer,
+                        "material_name": material_name
+                    })
+            
+            # Fallback to course descriptions if no relevant material content was found
             course_names = [course.name for course in enrolled_courses]
             course_descriptions = [f"{course.name}: {course.description}" for course in enrolled_courses]
             courses_context = "\n".join(course_descriptions)
             
-            # Generate a response using the RAG system with enrolled courses
-            # Since this doesn't use RAG directly, we'll use Gemini API
+            # Generate a response using the course descriptions
             try:
-                # Use the same client as in the RAG system
                 model = genai.models.get_model("gemini-2.0-flash")
                 
                 prompt = f"""Question: {question}
@@ -166,9 +218,37 @@ class QuestionHintResource(Resource):
             question = question_data.description
             options = [question_data.option1, question_data.option2, question_data.option3, question_data.option4]
             
-            # Initialize Gemini model using the same client as RAG system           
+            # Use RAG to get relevant context if it's tied to a material
+            material_id = question_data.material_id if hasattr(question_data, 'material_id') else None
+            context = ""
+            
+            if material_id:
+                # Get context from the material using RAG
+                filter_criteria = {"material_id": material_id}
+                results = rag_system.retrieve_context(question, k=3, filter_criteria=filter_criteria)
+                
+                if results:
+                    context = "\n\n".join([result["content"] for result in results])
+            
+            # Initialize Gemini model using the same client as RAG system
             model = genai.models.get_model("gemini-2.0-flash")
-            prompt = f"Question: {question}\nOptions: {', '.join(options)}\nProvide hints without revealing the answer.\n\nDo not state the correct answer explicitly. Instead, provide logical reasoning and indirect clues to help the student figure it out."
+            
+            # Create prompt with or without RAG context
+            if context:
+                prompt = f"""Question: {question}
+Options: {', '.join(options)}
+
+Relevant information:
+{context}
+
+Provide hints without revealing the answer directly.
+Do not state the correct answer explicitly. Instead, provide logical reasoning and indirect clues to help the student figure it out."""
+            else:
+                prompt = f"""Question: {question}
+Options: {', '.join(options)}
+
+Provide hints without revealing the answer.
+Do not state the correct answer explicitly. Instead, provide logical reasoning and indirect clues to help the student figure it out."""
             
             response = model.generate_content(
                 contents=prompt,
